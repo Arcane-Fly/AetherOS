@@ -1,0 +1,25 @@
+{
+  "name": "liquid-os",
+  "version": "1.0.0",
+  "description": "LiquidOS - Dynamic Generative Operating Environment",
+  "main": "index.js",
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "start": "docker-compose up",
+    "stop": "docker-compose down",
+    "migrate": "node scripts/migrate.js",
+    "setup": "./scripts/setup.sh"
+  },
+  "keywords": [
+    "generative",
+    "ai",
+    "operating-system",
+    "microservices",
+    "react"
+  ],
+  "author": "LiquidOS Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
