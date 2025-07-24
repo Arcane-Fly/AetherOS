@@ -1,0 +1,32 @@
+{
+  "name": "liquidos-websocket-service",
+  "version": "1.0.0",
+  "description": "WebSocket service for real-time collaboration in LiquidOS",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "socket.io": "^4.7.4",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.0",
+    "redis": "^4.6.5",
+    "helmet": "^6.0.1",
+    "express-rate-limit": "^6.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "jest": "^29.5.0"
+  },
+  "keywords": [
+    "websocket",
+    "real-time",
+    "collaboration",
+    "liquidos"
+  ],
+  "author": "LiquidOS Team",
+  "license": "MIT"
+}

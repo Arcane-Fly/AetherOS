@@ -21,7 +21,7 @@ const connectDB = async () => {
 const createTables = async () => {
   const createUsersTable = `
     CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      id SERIAL PRIMARY KEY,
       email VARCHAR(255) UNIQUE NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
       name VARCHAR(255) NOT NULL,
@@ -32,15 +32,29 @@ const createTables = async () => {
 
   const createCreationsTable = `
     CREATE TABLE IF NOT EXISTS creations (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       name VARCHAR(255) NOT NULL,
       description TEXT,
       type VARCHAR(50) NOT NULL,
-      content JSONB,
-      status VARCHAR(50) DEFAULT 'draft',
+      content TEXT,
+      language VARCHAR(50),
+      metadata JSONB,
+      framework VARCHAR(100),
+      executable BOOLEAN DEFAULT FALSE,
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `;
+
+  const createCreationLinksTable = `
+    CREATE TABLE IF NOT EXISTS creation_links (
+      id SERIAL PRIMARY KEY,
+      source_id INTEGER REFERENCES creations(id) ON DELETE CASCADE,
+      target_id INTEGER REFERENCES creations(id) ON DELETE CASCADE,
+      link_type VARCHAR(50) NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(source_id, target_id)
     );
   `;
 
@@ -48,11 +62,14 @@ const createTables = async () => {
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_creations_user_id ON creations(user_id);
     CREATE INDEX IF NOT EXISTS idx_creations_type ON creations(type);
+    CREATE INDEX IF NOT EXISTS idx_creation_links_source ON creation_links(source_id);
+    CREATE INDEX IF NOT EXISTS idx_creation_links_target ON creation_links(target_id);
   `;
 
   try {
     await pool.query(createUsersTable);
     await pool.query(createCreationsTable);
+    await pool.query(createCreationLinksTable);
     await pool.query(createIndexes);
     console.log('Database tables created successfully');
   } catch (error) {

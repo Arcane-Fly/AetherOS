@@ -96,5 +96,25 @@ export const creationService = {
 
   async executeCreation(id) {
     return apiService.post(`/creations/${id}/execute`);
+  },
+
+  async linkCreations(sourceId, targetId, linkType = 'reference') {
+    return apiService.post('/creations/link', {
+      sourceId,
+      targetId,
+      linkType
+    });
+  },
+
+  async unlinkCreations(sourceId, targetId) {
+    return apiService.delete(`/creations/link/${sourceId}/${targetId}`);
+  },
+
+  async getCreationLinks(id) {
+    return apiService.get(`/creations/${id}/links`);
+  },
+
+  async getCreationMesh() {
+    return apiService.get('/creations/mesh');
   }
 };

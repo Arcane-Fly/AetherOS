@@ -1,17 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generationService } from '../../services/api';
+import GenerationTypeSelector from './GenerationTypeSelector';
+import CreationPreview from './CreationPreview';
 
 const ChatInterface = ({ user, creations, setCreations }) => {
   const [messages, setMessages] = useState([
     { 
       id: 1, 
-      text: `Welcome to LiquidOS, ${user.name}! I'm your AI assistant ready to help you create anything you need. What would you like to build today?`, 
+      text: `Welcome to LiquidOS, ${user.name}! I'm your AI assistant ready to help you create anything you need. 
+      
+I can help you generate:
+🔧 **Code** - Functions, scripts, algorithms
+🌐 **APIs** - REST endpoints, OpenAPI specs  
+🎨 **UIs** - React components, interfaces
+⚡ **CLIs** - Command-line tools and utilities
+
+What would you like to build today?`, 
       sender: 'system',
       timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [generationType, setGenerationType] = useState('code');
+  const [showTypeSelector, setShowTypeSelector] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -22,6 +34,49 @@ const ChatInterface = ({ user, creations, setCreations }) => {
     scrollToBottom();
   }, [messages]);
 
+  const getGenerationFunction = (type) => {
+    const functions = {
+      code: generationService.generateCode,
+      api: generationService.generateAPI,
+      ui: generationService.generateUI,
+      cli: generationService.generateCLI
+    };
+    return functions[type] || generationService.generateCode;
+  };
+
+  const formatGenerationResponse = (response, type, prompt) => {
+    const formats = {
+      code: {
+        text: `I've generated some ${response.language} code for you:`,
+        content: response.code,
+        language: response.language,
+        name: `Generated ${response.language} Code`
+      },
+      api: {
+        text: `I've created an API specification for you:`,
+        content: response.specification,
+        language: 'yaml',
+        name: `Generated API Specification`,
+        metadata: response.metadata
+      },
+      ui: {
+        text: `I've created a React UI component for you:`,
+        content: response.component,
+        language: 'jsx',
+        name: `Generated UI Component`,
+        framework: response.framework
+      },
+      cli: {
+        text: `I've created a CLI tool for you:`,
+        content: response.code,
+        language: response.language,
+        name: `Generated CLI Tool`,
+        executable: response.executable
+      }
+    };
+    return formats[type] || formats.code;
+  };
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
@@ -29,34 +84,45 @@ const ChatInterface = ({ user, creations, setCreations }) => {
       id: Date.now(), 
       text: input, 
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
+      generationType
     };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
 
     try {
-      const response = await generationService.generateCode(input);
+      const generateFn = getGenerationFunction(generationType);
+      const response = await generateFn(input);
       
       if (response.success) {
+        const format = formatGenerationResponse(response, generationType, input);
+        
         const systemMessage = { 
           id: Date.now() + 1, 
-          text: `I've generated some ${response.language} code for you:\n\n\`\`\`${response.language}\n${response.code}\n\`\`\`\n\nWould you like me to explain how it works or make any modifications?`, 
+          text: `${format.text}\n\n\`\`\`${format.language}\n${format.content}\n\`\`\`\n\nWould you like me to explain how it works or make any modifications?`, 
           sender: 'system',
           timestamp: new Date(),
-          code: response.code,
-          language: response.language
+          generationType,
+          content: format.content,
+          language: format.language,
+          metadata: format.metadata,
+          framework: format.framework,
+          executable: format.executable
         };
         setMessages(prev => [...prev, systemMessage]);
 
         // Create a new creation record
         const newCreation = {
           id: Date.now() + 2,
-          name: `Generated ${response.language} Code`,
+          name: format.name,
           description: input,
-          type: 'code',
-          content: response.code,
-          language: response.language,
+          type: generationType,
+          content: format.content,
+          language: format.language,
+          metadata: format.metadata,
+          framework: format.framework,
+          executable: format.executable,
           timestamp: new Date()
         };
         setCreations(prev => [newCreation, ...prev]);
@@ -85,18 +151,63 @@ const ChatInterface = ({ user, creations, setCreations }) => {
   };
 
   const formatMessage = (message) => {
-    if (message.code) {
+    if (message.content && message.language) {
+      const displayText = message.text.split('```')[0];
+      const afterText = message.text.split('```')[2] || '';
+      
       return (
         <div>
-          <div className="mb-2">{message.text.split('```')[0]}</div>
+          <div className="mb-2">{displayText}</div>
           <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-            <pre>{message.code}</pre>
+            <pre>{message.content}</pre>
           </div>
-          <div className="mt-2">{message.text.split('```')[2]}</div>
+          {afterText && <div className="mt-2">{afterText}</div>}
+          {message.generationType && (
+            <div className="mt-2 flex items-center gap-2">
+              <span className={`px-2 py-1 text-xs rounded-full ${getTypeColor(message.generationType)}`}>
+                {message.generationType.toUpperCase()}
+              </span>
+              {message.executable && (
+                <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                  EXECUTABLE
+                </span>
+              )}
+            </div>
+          )}
         </div>
       );
     }
     return <div className="whitespace-pre-wrap">{message.text}</div>;
+  };
+
+  const getTypeColor = (type) => {
+    const colors = {
+      code: 'bg-blue-100 text-blue-800',
+      api: 'bg-green-100 text-green-800',
+      ui: 'bg-purple-100 text-purple-800',
+      cli: 'bg-orange-100 text-orange-800'
+    };
+    return colors[type] || colors.code;
+  };
+
+  const getPlaceholder = (type) => {
+    const placeholders = {
+      code: "Describe the code you want to generate... (Press Enter to send, Shift+Enter for new line)",
+      api: "Describe the API you want to create... (Press Enter to send, Shift+Enter for new line)",
+      ui: "Describe the UI component you want to build... (Press Enter to send, Shift+Enter for new line)",
+      cli: "Describe the CLI tool you want to create... (Press Enter to send, Shift+Enter for new line)"
+    };
+    return placeholders[type] || placeholders.code;
+  };
+
+  const getExampleText = (type) => {
+    const examples = {
+      code: 'Try: "Create a Python function to calculate fibonacci numbers"',
+      api: 'Try: "Build a REST API for user management with CRUD operations"',
+      ui: 'Try: "Create a responsive dashboard component with charts"',
+      cli: 'Try: "Build a file organizer CLI tool that sorts files by type"'
+    };
+    return examples[type] || examples.code;
   };
 
   return (
@@ -135,13 +246,26 @@ const ChatInterface = ({ user, creations, setCreations }) => {
       </div>
       
       <div className="border-t border-gray-200 p-4 bg-white">
+        <div className="flex items-center gap-2 mb-3">
+          <label className="text-sm font-medium text-gray-700">Generation Type:</label>
+          <select
+            value={generationType}
+            onChange={(e) => setGenerationType(e.target.value)}
+            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-liquid-blue"
+          >
+            <option value="code">🔧 Code</option>
+            <option value="api">🌐 API</option>
+            <option value="ui">🎨 UI Component</option>
+            <option value="cli">⚡ CLI Tool</option>
+          </select>
+        </div>
         <div className="flex space-x-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1 border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-liquid-blue focus:border-transparent"
-            placeholder="Describe what you want to create... (Press Enter to send, Shift+Enter for new line)"
+            placeholder={getPlaceholder(generationType)}
             rows="3"
             disabled={loading}
           />
@@ -154,7 +278,7 @@ const ChatInterface = ({ user, creations, setCreations }) => {
           </button>
         </div>
         <div className="mt-2 text-xs text-gray-500">
-          Try: "Create a Python function to calculate fibonacci numbers" or "Build a REST API endpoint for user management"
+          {getExampleText(generationType)}
         </div>
       </div>
     </div>

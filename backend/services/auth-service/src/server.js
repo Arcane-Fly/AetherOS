@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/auth');
+const creationsRoutes = require('./routes/creations');
 const { connectDB } = require('./models/database');
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/creations', creationsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
