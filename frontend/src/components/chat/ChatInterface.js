@@ -7,7 +7,7 @@ const ChatInterface = ({ user, creations, setCreations }) => {
   const [messages, setMessages] = useState([
     { 
       id: 1, 
-      text: `Welcome to LiquidOS, ${user.name}! I'm your AI assistant ready to help you create anything you need. 
+      text: `Welcome to AetherOS, ${user.name}! I'm your AI assistant ready to help you create anything you need. 
       
 I can help you generate:
 🔧 **Code** - Functions, scripts, algorithms

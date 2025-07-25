@@ -1,8 +1,8 @@
-# LiquidOS - Dynamic Generative Operating Environment
+# AetherOS - Dynamic Generative Operating Environment
 
-🌊 **LiquidOS** is a fluid, adaptive web-based operating system where all components - APIs, CLIs, UIs, workflows, and integrations - are generated on-demand to solve user problems in real-time.
+🌊 **AetherOS** is a fluid, adaptive web-based operating system where all components - APIs, CLIs, UIs, workflows, and integrations - are generated on-demand to solve user problems in real-time.
 
-![LiquidOS Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
+![AetherOS Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
 ![Frontend](https://img.shields.io/badge/Frontend-React-61DAFB)
 ![Backend](https://img.shields.io/badge/Backend-Node.js-339933)
 ![Database](https://img.shields.io/badge/Database-PostgreSQL-336791)
@@ -33,8 +33,8 @@ Create a "liquid" container that holds generative capabilities, allowing users t
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Arcane-Fly/LiquidOS.git
-   cd LiquidOS
+   git clone https://github.com/Arcane-Fly/AetherOS.git
+   cd AetherOS
    ```
 
 2. **Run the setup script**
@@ -84,7 +84,7 @@ Frontend (React) ↔ API Gateway ↔ Microservices ↔ Databases
 ## 📁 Project Structure
 
 ```
-liquid-os/
+aether-os/
 ├── frontend/                 # React.js frontend application
 │   ├── src/
 │   │   ├── components/      # Reusable UI components
@@ -107,19 +107,19 @@ liquid-os/
 ### Generate Code
 ```
 User: "Create a Python function to calculate fibonacci numbers"
-LiquidOS: *Generates optimized Python code with proper documentation*
+AetherOS: *Generates optimized Python code with proper documentation*
 ```
 
 ### Generate API
 ```
 User: "Build a REST API for user management with CRUD operations"
-LiquidOS: *Creates OpenAPI specification with endpoints and schemas*
+AetherOS: *Creates OpenAPI specification with endpoints and schemas*
 ```
 
 ### Generate UI Components
 ```
 User: "Create a responsive dashboard with charts and user stats"
-LiquidOS: *Generates React component with Tailwind CSS styling*
+AetherOS: *Generates React component with Tailwind CSS styling*
 ```
 
 ## 🔧 Development
@@ -244,9 +244,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- 📧 Email: support@liquidos.dev
-- 💬 Discord: [LiquidOS Community](https://discord.gg/liquidos)
-- 📖 Documentation: [docs.liquidos.dev](https://docs.liquidos.dev)
+- 📧 Email: support@aetheros.dev
+- 💬 Discord: [AetherOS Community](https://discord.gg/aetheros)
+- 📖 Documentation: [docs.aetheros.dev](https://docs.aetheros.dev)
 
 ## 🗺️ Roadmap
 
@@ -273,4 +273,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by the LiquidOS Team
+Made with ❤️ by the AetherOS Team

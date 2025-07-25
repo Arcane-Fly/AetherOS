@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Simple validation script to check LiquidOS structure
+# Simple validation script to check AetherOS structure
 
-echo "🧪 Running LiquidOS validation tests..."
+echo "🧪 Running AetherOS validation tests..."
 
 # Check required files
 echo "📁 Checking file structure..."
@@ -108,4 +108,4 @@ echo ""
 echo "📝 Next steps:"
 echo "1. Copy .env.example to .env and configure your OpenAI API key"
 echo "2. Run: docker-compose up --build"
-echo "3. Visit http://localhost:3000 to access LiquidOS"
+echo "3. Visit http://localhost:3000 to access AetherOS"

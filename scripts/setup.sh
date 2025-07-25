@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# LiquidOS Setup Script
+# AetherOS Setup Script
 
 set -e
 
-echo "🌊 Setting up LiquidOS - Dynamic Generative Operating Environment"
+echo "🌊 Setting up AetherOS - Dynamic Generative Operating Environment"
 
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
@@ -52,7 +52,7 @@ for service in "${services[@]}"; do
 done
 
 echo ""
-echo "🎉 LiquidOS setup complete!"
+echo "🎉 AetherOS setup complete!"
 echo ""
 echo "🌐 Frontend: http://localhost:3000"
 echo "🔗 API Gateway: http://localhost:8080"
@@ -61,7 +61,7 @@ echo ""
 echo "📝 Next steps:"
 echo "1. Edit .env file with your OpenAI API key"
 echo "2. Restart services: docker-compose restart generation-service"
-echo "3. Visit http://localhost:3000 to start using LiquidOS"
+echo "3. Visit http://localhost:3000 to start using AetherOS"
 echo ""
 echo "🛠️  Useful commands:"
 echo "   View logs: docker-compose logs -f [service-name]"

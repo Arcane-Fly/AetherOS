@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Comprehensive LiquidOS Test Suite
+# Comprehensive AetherOS Test Suite
 
 set -e
 
-echo "🧪 Running LiquidOS Comprehensive Test Suite"
+echo "🧪 Running AetherOS Comprehensive Test Suite"
 echo "============================================="
 
 # Test 1: File Structure Validation
@@ -209,7 +209,7 @@ echo ""
 echo "📚 Test 7: Documentation"
 echo "----------------------"
 
-if grep -q "LiquidOS" README.md; then
+if grep -q "AetherOS" README.md; then
   echo "✅ README.md contains project title"
 else
   echo "❌ README.md missing or incomplete"
@@ -243,12 +243,12 @@ echo "✅ Frontend components are in place"
 echo "✅ Environment configuration is ready"
 echo "✅ Documentation is comprehensive"
 echo ""
-echo "🚀 LiquidOS is ready for deployment!"
+echo "🚀 AetherOS is ready for deployment!"
 echo ""
 echo "📝 Next steps:"
 echo "1. Copy .env.example to .env: cp .env.example .env"
 echo "2. Edit .env with your OpenAI API key"
 echo "3. Start the system: docker compose up --build"
-echo "4. Visit http://localhost:3000 to start using LiquidOS"
+echo "4. Visit http://localhost:3000 to start using AetherOS"
 echo ""
 echo "🎯 Your generative operating environment is ready!"

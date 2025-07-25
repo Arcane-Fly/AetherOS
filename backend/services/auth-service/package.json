@@ -1,7 +1,7 @@
 {
-  "name": "liquidos-auth-service",
+  "name": "aetheros-auth-service",
   "version": "1.0.0",
-  "description": "Authentication service for LiquidOS",
+  "description": "Authentication service for AetherOS",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
