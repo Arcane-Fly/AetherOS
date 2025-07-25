@@ -1,0 +1,130 @@
+services:
+  # Database services
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-liquidos}
+      POSTGRES_USER: ${POSTGRES_USER:-liquidos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-liquidos123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-liquidos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend services
+  auth-service:
+    build: 
+      context: ./backend/services/auth-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-liquidos}:${POSTGRES_PASSWORD:-liquidos123}@postgres:5432/${POSTGRES_DB:-liquidos}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secure-jwt-secret-change-this-in-production}
+      - AUTH_SERVICE_PORT=3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  generation-service:
+    build:
+      context: ./backend/services/generation-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-your-openai-api-key-here}
+      - REDIS_URL=redis://redis:6379
+      - GENERATION_SERVICE_PORT=3002
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  websocket-service:
+    build:
+      context: ./backend/services/websocket-service
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-your-super-secure-jwt-secret-change-this-in-production}
+      - WEBSOCKET_SERVICE_PORT=3003
+      - CORS_ORIGIN=http://localhost:3000
+    ports:
+      - "${WEBSOCKET_SERVICE_PORT:-3003}:3003"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway
+  api-gateway:
+    image: nginx:alpine
+    ports:
+      - "${API_GATEWAY_PORT:-8080}:8080"
+    volumes:
+      - ./backend/api-gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth-service
+      - generation-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:${API_GATEWAY_PORT:-8080}/api
+      - REACT_APP_WEBSOCKET_URL=http://localhost:${WEBSOCKET_SERVICE_PORT:-3003}
+    depends_on:
+      - api-gateway
+      - websocket-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    driver: bridge
