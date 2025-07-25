@@ -1,7 +1,7 @@
 {
-  "name": "liquidos-websocket-service",
+  "name": "aetheros-websocket-service",
   "version": "1.0.0",
-  "description": "WebSocket service for real-time collaboration in LiquidOS",
+  "description": "WebSocket service for real-time collaboration in AetherOS",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -25,8 +25,8 @@
     "websocket",
     "real-time",
     "collaboration",
-    "liquidos"
+    "aetheros"
   ],
-  "author": "LiquidOS Team",
+  "author": "AetherOS Team",
   "license": "MIT"
 }

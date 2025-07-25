@@ -1,7 +1,7 @@
 {
-  "name": "liquid-os",
+  "name": "aether-os",
   "version": "1.0.0",
-  "description": "LiquidOS - Dynamic Generative Operating Environment",
+  "description": "AetherOS - Dynamic Generative Operating Environment",
   "main": "index.js",
   "scripts": {
     "dev": "docker-compose up --build",
@@ -17,7 +17,7 @@
     "microservices",
     "react"
   ],
-  "author": "LiquidOS Team",
+  "author": "AetherOS Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"

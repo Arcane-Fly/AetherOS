@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Database connection
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/liquidos'
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/aetheros'
 });
 
 // Validation schemas

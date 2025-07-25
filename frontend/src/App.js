@@ -43,7 +43,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading LiquidOS...</div>
+        <div className="text-xl text-gray-600">Loading AetherOS...</div>
       </div>
     );
   }
@@ -56,7 +56,7 @@ function App() {
         <div className="flex h-screen">
           <div className="w-1/4 bg-white border-r border-gray-200 p-4">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">LiquidOS</h2>
+              <h2 className="text-lg font-semibold text-gray-800">AetherOS</h2>
               <button
                 onClick={handleLogout}
                 className="text-sm text-gray-600 hover:text-gray-800"
