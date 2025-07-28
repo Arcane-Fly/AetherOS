@@ -23,10 +23,17 @@ const createTables = async () => {
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       email VARCHAR(255) UNIQUE NOT NULL,
-      password_hash VARCHAR(255) NOT NULL,
+      password_hash VARCHAR(255),
       name VARCHAR(255) NOT NULL,
+      provider VARCHAR(50) DEFAULT 'local',
+      provider_id VARCHAR(255),
+      avatar VARCHAR(500),
+      refresh_token TEXT,
+      is_active BOOLEAN DEFAULT TRUE,
+      last_login TIMESTAMP,
       created_at TIMESTAMP DEFAULT NOW(),
-      updated_at TIMESTAMP DEFAULT NOW()
+      updated_at TIMESTAMP DEFAULT NOW(),
+      UNIQUE(provider, provider_id)
     );
   `;
 

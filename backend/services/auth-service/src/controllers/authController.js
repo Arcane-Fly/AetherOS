@@ -1,10 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
-const User = require('../models/User');
+const { User } = require('../models/User');
+const logger = require('../config/logger');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secure-jwt-secret-change-this-in-production';
 const JWT_EXPIRE = '24h';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // Validation schemas
 const registerSchema = Joi.object({
@@ -24,6 +26,7 @@ class AuthController {
       // Validate input
       const { error, value } = registerSchema.validate(req.body);
       if (error) {
+        req.logger?.warn('Registration validation failed', { error: error.details[0].message });
         return res.status(400).json({ error: error.details[0].message });
       }
 
@@ -32,6 +35,7 @@ class AuthController {
       // Check if user already exists
       const existingUser = await User.findByEmail(email);
       if (existingUser) {
+        req.logger?.warn('Registration attempted with existing email', { email });
         return res.status(400).json({ error: 'User already exists with this email' });
       }
 
@@ -49,6 +53,8 @@ class AuthController {
         { expiresIn: JWT_EXPIRE }
       );
 
+      req.logger?.info('User registered successfully', { userId: newUser.id, email: newUser.email });
+
       res.status(201).json({
         success: true,
         token,
@@ -59,7 +65,7 @@ class AuthController {
         }
       });
     } catch (error) {
-      console.error('Registration error:', error);
+      req.logger?.error('Registration error', { error: error.message });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -69,6 +75,7 @@ class AuthController {
       // Validate input
       const { error, value } = loginSchema.validate(req.body);
       if (error) {
+        req.logger?.warn('Login validation failed', { error: error.details[0].message });
         return res.status(400).json({ error: error.details[0].message });
       }
 
@@ -77,14 +84,19 @@ class AuthController {
       // Find user
       const user = await User.findByEmail(email);
       if (!user) {
+        req.logger?.warn('Login attempted with non-existent email', { email });
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password_hash);
       if (!isValidPassword) {
+        req.logger?.warn('Login attempted with invalid password', { email });
         return res.status(401).json({ error: 'Invalid credentials' });
       }
+
+      // Update last login
+      await User.updateLastLogin(user.id);
 
       // Generate JWT token
       const token = jwt.sign(
@@ -92,6 +104,8 @@ class AuthController {
         JWT_SECRET,
         { expiresIn: JWT_EXPIRE }
       );
+
+      req.logger?.info('User logged in successfully', { userId: user.id, email: user.email });
 
       res.json({
         success: true,
@@ -103,8 +117,39 @@ class AuthController {
         }
       });
     } catch (error) {
-      console.error('Login error:', error);
+      req.logger?.error('Login error', { error: error.message });
       res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async oauthCallback(req, res) {
+    try {
+      if (!req.user) {
+        req.logger?.warn('OAuth callback without user data');
+        return res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
+      }
+
+      // Update last login
+      await User.updateLastLogin(req.user.id);
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: req.user.id, email: req.user.email },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRE }
+      );
+
+      req.logger?.info('OAuth login successful', { 
+        userId: req.user.id, 
+        email: req.user.email,
+        provider: req.user.provider 
+      });
+
+      // Redirect to frontend with token
+      res.redirect(`${FRONTEND_URL}/oauth/callback?token=${token}`);
+    } catch (error) {
+      req.logger?.error('OAuth callback error', { error: error.message });
+      res.redirect(`${FRONTEND_URL}/login?error=oauth_error`);
     }
   }
 
@@ -112,6 +157,7 @@ class AuthController {
     try {
       const user = await User.findById(req.user.userId);
       if (!user) {
+        req.logger?.warn('Profile requested for non-existent user', { userId: req.user.userId });
         return res.status(404).json({ error: 'User not found' });
       }
 
@@ -121,11 +167,13 @@ class AuthController {
           id: user.id,
           email: user.email,
           name: user.name,
+          provider: user.provider,
+          avatar: user.avatar,
           created_at: user.created_at
         }
       });
     } catch (error) {
-      console.error('Get profile error:', error);
+      req.logger?.error('Get profile error', { error: error.message });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -135,11 +183,14 @@ class AuthController {
       const { name } = req.body;
       
       if (!name || name.trim().length < 2) {
+        req.logger?.warn('Profile update with invalid name', { userId: req.user.userId });
         return res.status(400).json({ error: 'Name is required and must be at least 2 characters' });
       }
 
       const updatedUser = await User.updateById(req.user.userId, { name: name.trim() });
       
+      req.logger?.info('Profile updated successfully', { userId: req.user.userId });
+
       res.json({
         success: true,
         user: {
@@ -150,7 +201,7 @@ class AuthController {
         }
       });
     } catch (error) {
-      console.error('Update profile error:', error);
+      req.logger?.error('Update profile error', { error: error.message });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -164,12 +215,28 @@ class AuthController {
         { expiresIn: JWT_EXPIRE }
       );
 
+      req.logger?.info('Token refreshed', { userId: req.user.userId });
+
       res.json({
         success: true,
         token
       });
     } catch (error) {
-      console.error('Refresh token error:', error);
+      req.logger?.error('Refresh token error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  async logout(req, res) {
+    try {
+      req.logger?.info('User logged out', { userId: req.user.userId });
+      
+      res.json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    } catch (error) {
+      req.logger?.error('Logout error', { error: error.message });
       res.status(500).json({ error: 'Internal server error' });
     }
   }

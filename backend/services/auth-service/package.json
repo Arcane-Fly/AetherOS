@@ -17,7 +17,13 @@
     "helmet": "^6.1.5",
     "express-rate-limit": "^6.7.0",
     "dotenv": "^16.0.3",
-    "joi": "^17.9.1"
+    "joi": "^17.9.1",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-github2": "^0.1.12",
+    "express-session": "^1.17.3",
+    "winston": "^3.8.2",
+    "express-winston": "^4.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
