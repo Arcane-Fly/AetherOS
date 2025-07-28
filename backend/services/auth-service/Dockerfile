@@ -11,9 +11,11 @@ RUN npm install --only=production
 # Copy source code
 COPY src/ ./src/
 
-# Create non-root user
+# Create logs directory and non-root user
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 && \
+    mkdir -p logs && \
+    chown -R nodejs:nodejs /app
 
 USER nodejs
 

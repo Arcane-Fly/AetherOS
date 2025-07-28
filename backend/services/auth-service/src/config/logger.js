@@ -34,28 +34,7 @@ const logger = winston.createLogger({
         winston.format.colorize(),
         winston.format.simple()
       )
-    }),
-    // File transport for production
-    new winston.transports.File({
-      filename: path.join(logDir, 'auth-service.log'),
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    // Error file
-    new winston.transports.File({
-      filename: path.join(logDir, 'auth-service-error.log'),
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
     })
-  ],
-  // Handle uncaught exceptions
-  exceptionHandlers: [
-    new winston.transports.File({ filename: path.join(logDir, 'auth-service-exceptions.log') })
-  ],
-  // Handle unhandled promise rejections
-  rejectionHandlers: [
-    new winston.transports.File({ filename: path.join(logDir, 'auth-service-rejections.log') })
   ]
 });
 
