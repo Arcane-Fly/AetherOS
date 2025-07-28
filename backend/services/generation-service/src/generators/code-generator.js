@@ -5,15 +5,21 @@ class CodeGenerator {
     this.llmClient = new LLMClient();
   }
 
-  async generate(prompt, options = {}) {
+  async generate(prompt, options = {}, logger = null) {
     try {
-      const generatedCode = await this.llmClient.generateCode(prompt, options.language);
+      const generatedCode = await this.llmClient.generateCode(prompt, options.language, logger);
       
       // Detect language if not specified
       const language = options.language || this.detectLanguage(generatedCode);
       
       // Clean up the generated code
       const cleanCode = this.cleanupCode(generatedCode);
+      
+      logger?.debug('Code generation completed', {
+        originalLength: generatedCode.length,
+        cleanedLength: cleanCode.length,
+        detectedLanguage: language
+      });
       
       return {
         success: true,
@@ -26,7 +32,7 @@ class CodeGenerator {
         }
       };
     } catch (error) {
-      console.error('Code generation error:', error);
+      logger?.error('Code generation failed', { error: error.message });
       return {
         success: false,
         error: error.message || 'Failed to generate code'

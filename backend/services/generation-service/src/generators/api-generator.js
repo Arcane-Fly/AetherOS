@@ -5,16 +5,22 @@ class APIGenerator {
     this.llmClient = new LLMClient();
   }
 
-  async generate(prompt, options = {}) {
+  async generate(prompt, options = {}, logger = null) {
     try {
-      const generatedAPI = await this.llmClient.generateAPI(prompt);
+      const generatedAPI = await this.llmClient.generateAPI(prompt, logger);
       
       // Parse and validate the OpenAPI specification
       const cleanedAPI = this.cleanupAPISpec(generatedAPI);
       
+      logger?.debug('API generation completed', {
+        originalLength: generatedAPI.length,
+        cleanedLength: cleanedAPI.length
+      });
+      
       return {
         success: true,
         specification: cleanedAPI,
+        spec: cleanedAPI, // Also provide as 'spec' for consistent response structure
         format: 'openapi',
         metadata: {
           timestamp: new Date().toISOString(),
@@ -23,7 +29,7 @@ class APIGenerator {
         }
       };
     } catch (error) {
-      console.error('API generation error:', error);
+      logger?.error('API generation failed', { error: error.message });
       return {
         success: false,
         error: error.message || 'Failed to generate API specification'

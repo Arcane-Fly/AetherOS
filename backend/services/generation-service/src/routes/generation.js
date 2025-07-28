@@ -25,15 +25,29 @@ router.post('/code', async (req, res) => {
   try {
     const { error, value } = generateSchema.validate(req.body);
     if (error) {
+      req.logger?.warn('Code generation validation failed', { error: error.details[0].message });
       return res.status(400).json({ error: error.details[0].message });
     }
 
     const { prompt, language, options } = value;
-    const result = await codeGenerator.generate(prompt, { language, ...options });
+    
+    req.logger?.info('Code generation request started', { 
+      language, 
+      promptLength: prompt.length,
+      hasOptions: !!options 
+    });
+    
+    const result = await codeGenerator.generate(prompt, { language, ...options }, req.logger);
+    
+    req.logger?.info('Code generation completed', { 
+      success: result.success,
+      language: result.language,
+      codeLength: result.code?.length || 0
+    });
     
     res.json(result);
   } catch (error) {
-    console.error('Code generation error:', error);
+    req.logger?.error('Code generation error', { error: error.message });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -43,15 +57,27 @@ router.post('/api', async (req, res) => {
   try {
     const { error, value } = generateSchema.validate(req.body);
     if (error) {
+      req.logger?.warn('API generation validation failed', { error: error.details[0].message });
       return res.status(400).json({ error: error.details[0].message });
     }
 
     const { prompt, options } = value;
-    const result = await apiGenerator.generate(prompt, options);
+    
+    req.logger?.info('API generation request started', { 
+      promptLength: prompt.length,
+      hasOptions: !!options 
+    });
+    
+    const result = await apiGenerator.generate(prompt, options, req.logger);
+    
+    req.logger?.info('API generation completed', { 
+      success: result.success,
+      specLength: result.spec?.length || 0
+    });
     
     res.json(result);
   } catch (error) {
-    console.error('API generation error:', error);
+    req.logger?.error('API generation error', { error: error.message });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -61,15 +87,27 @@ router.post('/ui', async (req, res) => {
   try {
     const { error, value } = generateSchema.validate(req.body);
     if (error) {
+      req.logger?.warn('UI generation validation failed', { error: error.details[0].message });
       return res.status(400).json({ error: error.details[0].message });
     }
 
     const { prompt, options } = value;
-    const result = await uiGenerator.generate(prompt, options);
+    
+    req.logger?.info('UI generation request started', { 
+      promptLength: prompt.length,
+      hasOptions: !!options 
+    });
+    
+    const result = await uiGenerator.generate(prompt, options, req.logger);
+    
+    req.logger?.info('UI generation completed', { 
+      success: result.success,
+      componentLength: result.component?.length || 0
+    });
     
     res.json(result);
   } catch (error) {
-    console.error('UI generation error:', error);
+    req.logger?.error('UI generation error', { error: error.message });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -79,15 +117,28 @@ router.post('/cli', async (req, res) => {
   try {
     const { error, value } = generateSchema.validate(req.body);
     if (error) {
+      req.logger?.warn('CLI generation validation failed', { error: error.details[0].message });
       return res.status(400).json({ error: error.details[0].message });
     }
 
     const { prompt, options } = value;
-    const result = await cliGenerator.generate(prompt, options);
+    
+    req.logger?.info('CLI generation request started', { 
+      promptLength: prompt.length,
+      hasOptions: !!options 
+    });
+    
+    const result = await cliGenerator.generate(prompt, options, req.logger);
+    
+    req.logger?.info('CLI generation completed', { 
+      success: result.success,
+      language: result.language,
+      cliLength: result.cli?.length || 0
+    });
     
     res.json(result);
   } catch (error) {
-    console.error('CLI generation error:', error);
+    req.logger?.error('CLI generation error', { error: error.message });
     res.status(500).json({ error: 'Internal server error' });
   }
 });

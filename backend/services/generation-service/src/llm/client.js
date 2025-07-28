@@ -2,31 +2,61 @@ const OpenAI = require('openai');
 
 class LLMClient {
   constructor() {
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your-openai-api-key-here') {
+      console.warn('WARNING: OpenAI API key not configured. Generation will fail.');
+      return;
+    }
+    
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     });
   }
 
-  async generateCompletion(messages, options = {}) {
+  async generateCompletion(messages, options = {}, logger = null) {
     try {
+      if (!this.openai) {
+        throw new Error('OpenAI client not initialized - check API key configuration');
+      }
+
+      const model = options.model || 'gpt-3.5-turbo';
+      const maxTokens = options.maxTokens || 2000;
+      
+      logger?.info('Starting OpenAI completion request', {
+        model,
+        maxTokens,
+        messageCount: messages.length
+      });
+
       const completion = await this.openai.chat.completions.create({
-        model: options.model || 'gpt-3.5-turbo',
+        model,
         messages: messages,
-        max_tokens: options.maxTokens || 2000,
+        max_tokens: maxTokens,
         temperature: options.temperature || 0.7,
         top_p: options.topP || 1,
         frequency_penalty: options.frequencyPenalty || 0,
         presence_penalty: options.presencePenalty || 0
       });
 
-      return completion.choices[0].message.content;
+      const response = completion.choices[0].message.content;
+      
+      logger?.info('OpenAI completion successful', {
+        model,
+        responseLength: response.length,
+        tokensUsed: completion.usage?.total_tokens || 'unknown'
+      });
+
+      return response;
     } catch (error) {
-      console.error('OpenAI API error:', error);
-      throw new Error('Failed to generate completion');
+      logger?.error('OpenAI API error', { 
+        error: error.message, 
+        type: error.constructor.name,
+        statusCode: error.status || 'unknown'
+      });
+      throw new Error(`Failed to generate completion: ${error.message}`);
     }
   }
 
-  async generateCode(prompt, language = null) {
+  async generateCode(prompt, language = null, logger = null) {
     const systemMessage = {
       role: 'system',
       content: `You are a helpful AI assistant that generates clean, functional, and well-documented code. 
@@ -42,10 +72,10 @@ class LLMClient {
 
     return this.generateCompletion([systemMessage, userMessage], {
       temperature: 0.3 // Lower temperature for more deterministic code generation
-    });
+    }, logger);
   }
 
-  async generateAPI(prompt) {
+  async generateAPI(prompt, logger = null) {
     const systemMessage = {
       role: 'system',
       content: `You are an expert API designer. Generate a complete REST API specification including:
@@ -62,10 +92,10 @@ class LLMClient {
       content: prompt
     };
 
-    return this.generateCompletion([systemMessage, userMessage]);
+    return this.generateCompletion([systemMessage, userMessage], {}, logger);
   }
 
-  async generateUI(prompt) {
+  async generateUI(prompt, logger = null) {
     const systemMessage = {
       role: 'system',
       content: `You are a React expert. Generate a complete React component with:
@@ -83,10 +113,10 @@ class LLMClient {
       content: prompt
     };
 
-    return this.generateCompletion([systemMessage, userMessage]);
+    return this.generateCompletion([systemMessage, userMessage], {}, logger);
   }
 
-  async generateCLI(prompt) {
+  async generateCLI(prompt, logger = null) {
     const systemMessage = {
       role: 'system',
       content: `You are a CLI tool expert. Generate a complete command-line tool with:
@@ -104,7 +134,7 @@ class LLMClient {
       content: prompt
     };
 
-    return this.generateCompletion([systemMessage, userMessage]);
+    return this.generateCompletion([systemMessage, userMessage], {}, logger);
   }
 }
 

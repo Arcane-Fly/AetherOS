@@ -5,9 +5,9 @@ class CLIGenerator {
     this.llmClient = new LLMClient();
   }
 
-  async generate(prompt, options = {}) {
+  async generate(prompt, options = {}, logger = null) {
     try {
-      const generatedCLI = await this.llmClient.generateCLI(prompt);
+      const generatedCLI = await this.llmClient.generateCLI(prompt, logger);
       
       // Clean up the generated CLI code
       const cleanedCLI = this.cleanupCLICode(generatedCLI);
@@ -16,6 +16,8 @@ class CLIGenerator {
       const language = this.detectCLILanguage(cleanedCLI);
       
       return {
+        success: true,
+        cli: cleanedCLI,
         success: true,
         code: cleanedCLI,
         language: language,

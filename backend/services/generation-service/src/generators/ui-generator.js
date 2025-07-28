@@ -5,9 +5,9 @@ class UIGenerator {
     this.llmClient = new LLMClient();
   }
 
-  async generate(prompt, options = {}) {
+  async generate(prompt, options = {}, logger = null) {
     try {
-      const generatedUI = await this.llmClient.generateUI(prompt);
+      const generatedUI = await this.llmClient.generateUI(prompt, logger);
       
       // Clean up the generated UI component
       const cleanedUI = this.cleanupUICode(generatedUI);
