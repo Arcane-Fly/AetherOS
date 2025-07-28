@@ -19,7 +19,13 @@ const createCreationSchema = Joi.object({
   language: Joi.string().optional(),
   metadata: Joi.object().optional(),
   framework: Joi.string().optional(),
-  executable: Joi.boolean().optional()
+  executable: Joi.boolean().optional(),
+  isTemplate: Joi.boolean().optional(),
+  templateCategory: Joi.string().when('isTemplate', {
+    is: true,
+    then: Joi.string().max(100).required(),
+    otherwise: Joi.string().optional()
+  })
 });
 
 const linkCreationsSchema = Joi.object({
@@ -113,12 +119,17 @@ router.get('/search', auth, async (req, res) => {
 // Get all creations for authenticated user with search and filtering
 router.get('/', auth, async (req, res) => {
   try {
-    const { search, type, limit = 50, offset = 0, sortBy = 'created_at', sortOrder = 'DESC' } = req.query;
+    const { search, type, limit = 50, offset = 0, sortBy = 'created_at', sortOrder = 'DESC', includeVersions = false } = req.query;
     
-    // Build dynamic query
+    // Build dynamic query - only show current versions by default
     let query = 'SELECT * FROM creations WHERE user_id = $1';
     const params = [req.user.id];
     let paramIndex = 2;
+    
+    // Only show current versions unless explicitly requested
+    if (includeVersions !== 'true') {
+      query += ' AND is_current_version = TRUE';
+    }
     
     // Add search filter
     if (search) {
@@ -135,7 +146,7 @@ router.get('/', auth, async (req, res) => {
     }
     
     // Add sorting
-    const validSortFields = ['created_at', 'updated_at', 'name', 'type'];
+    const validSortFields = ['created_at', 'updated_at', 'name', 'type', 'version'];
     const validSortOrders = ['ASC', 'DESC'];
     if (validSortFields.includes(sortBy) && validSortOrders.includes(sortOrder.toUpperCase())) {
       query += ` ORDER BY ${sortBy} ${sortOrder.toUpperCase()}`;
@@ -153,6 +164,10 @@ router.get('/', auth, async (req, res) => {
     let countQuery = 'SELECT COUNT(*) FROM creations WHERE user_id = $1';
     const countParams = [req.user.id];
     let countParamIndex = 2;
+    
+    if (includeVersions !== 'true') {
+      countQuery += ' AND is_current_version = TRUE';
+    }
     
     if (search) {
       countQuery += ` AND (name ILIKE $${countParamIndex} OR description ILIKE $${countParamIndex})`;
@@ -175,6 +190,15 @@ router.get('/', auth, async (req, res) => {
         [creation.id]
       );
       creation.links = linksResult.rows;
+      
+      // Get version count if this is the current version
+      if (creation.is_current_version) {
+        const versionCountResult = await pool.query(
+          'SELECT COUNT(*) as version_count FROM creations WHERE (id = $1 OR parent_version_id = $1) AND user_id = $2',
+          [creation.id, req.user.id]
+        );
+        creation.version_count = parseInt(versionCountResult.rows[0].version_count);
+      }
     }
     
     res.json({
@@ -200,13 +224,13 @@ router.post('/', auth, async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { name, description, type, content, language, metadata, framework, executable } = value;
+    const { name, description, type, content, language, metadata, framework, executable, isTemplate, templateCategory } = value;
     
     const result = await pool.query(
-      `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, created_at, updated_at) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) 
+      `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, version, is_current_version, is_template, template_category, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1, TRUE, $10, $11, NOW(), NOW()) 
        RETURNING *`,
-      [req.user.id, name, description, type, content, language, JSON.stringify(metadata), framework, executable]
+      [req.user.id, name, description, type, content, language, JSON.stringify(metadata), framework, executable, isTemplate || false, templateCategory || null]
     );
     
     res.status(201).json(result.rows[0]);
@@ -216,24 +240,70 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Update a creation
+// Update a creation (creates a new version)
 router.put('/:id', auth, async (req, res) => {
   try {
     const creationId = parseInt(req.params.id);
-    const { name, description, content, metadata } = req.body;
+    const { name, description, content, metadata, createNewVersion = true } = req.body;
     
-    const result = await pool.query(
-      `UPDATE creations SET name = COALESCE($1, name), description = COALESCE($2, description), 
-       content = COALESCE($3, content), metadata = COALESCE($4, metadata), updated_at = NOW()
-       WHERE id = $5 AND user_id = $6 RETURNING *`,
-      [name, description, content, JSON.stringify(metadata), creationId, req.user.id]
+    // Verify creation belongs to user and is current version
+    const currentResult = await pool.query(
+      'SELECT * FROM creations WHERE id = $1 AND user_id = $2 AND is_current_version = TRUE',
+      [creationId, req.user.id]
     );
     
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Creation not found' });
+    if (currentResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Creation not found or not current version' });
     }
     
-    res.json(result.rows[0]);
+    const currentCreation = currentResult.rows[0];
+    
+    if (createNewVersion) {
+      // Create a new version
+      const newVersion = currentCreation.version + 1;
+      
+      // Mark current version as not current
+      await pool.query(
+        'UPDATE creations SET is_current_version = FALSE WHERE id = $1',
+        [creationId]
+      );
+      
+      // Create new version
+      const newCreationResult = await pool.query(
+        `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, version, parent_version_id, is_current_version, created_at, updated_at) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE, NOW(), NOW()) 
+         RETURNING *`,
+        [
+          req.user.id,
+          name || currentCreation.name,
+          description || currentCreation.description,
+          currentCreation.type,
+          content || currentCreation.content,
+          currentCreation.language,
+          JSON.stringify(metadata || currentCreation.metadata),
+          currentCreation.framework,
+          currentCreation.executable,
+          newVersion,
+          creationId
+        ]
+      );
+      
+      res.json(newCreationResult.rows[0]);
+    } else {
+      // Update current version in place (for minor edits)
+      const result = await pool.query(
+        `UPDATE creations SET name = COALESCE($1, name), description = COALESCE($2, description), 
+         content = COALESCE($3, content), metadata = COALESCE($4, metadata), updated_at = NOW()
+         WHERE id = $5 AND user_id = $6 AND is_current_version = TRUE RETURNING *`,
+        [name, description, content, JSON.stringify(metadata), creationId, req.user.id]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Creation not found' });
+      }
+      
+      res.json(result.rows[0]);
+    }
   } catch (error) {
     console.error('Error updating creation:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -567,7 +637,7 @@ router.post('/import', auth, async (req, res) => {
       try {
         // Check if creation with same name already exists
         const existingResult = await pool.query(
-          'SELECT id FROM creations WHERE user_id = $1 AND name = $2',
+          'SELECT id FROM creations WHERE user_id = $1 AND name = $2 AND is_current_version = TRUE',
           [req.user.id, creationData.name]
         );
         
@@ -582,12 +652,27 @@ router.post('/import', auth, async (req, res) => {
         let creationId;
         
         if (existingResult.rows.length > 0 && overwriteExisting) {
-          // Update existing creation
-          const updateResult = await pool.query(
-            `UPDATE creations SET description = $1, type = $2, content = $3, language = $4, 
-             metadata = $5, framework = $6, executable = $7, updated_at = NOW()
-             WHERE id = $8 AND user_id = $9 RETURNING id`,
+          // Create new version of existing creation
+          const currentResult = await pool.query(
+            'SELECT * FROM creations WHERE id = $1',
+            [existingResult.rows[0].id]
+          );
+          const currentCreation = currentResult.rows[0];
+          
+          // Mark current as not current
+          await pool.query(
+            'UPDATE creations SET is_current_version = FALSE WHERE id = $1',
+            [existingResult.rows[0].id]
+          );
+          
+          // Create new version
+          const newVersionResult = await pool.query(
+            `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, version, parent_version_id, is_current_version, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE, NOW(), NOW()) 
+             RETURNING id`,
             [
+              req.user.id,
+              creationData.name,
               creationData.description,
               creationData.type,
               creationData.content,
@@ -595,16 +680,16 @@ router.post('/import', auth, async (req, res) => {
               JSON.stringify(creationData.metadata),
               creationData.framework,
               creationData.executable,
-              existingResult.rows[0].id,
-              req.user.id
+              currentCreation.version + 1,
+              existingResult.rows[0].id
             ]
           );
-          creationId = updateResult.rows[0].id;
+          creationId = newVersionResult.rows[0].id;
         } else {
           // Create new creation
           const insertResult = await pool.query(
-            `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, created_at, updated_at) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) 
+            `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, version, is_current_version, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1, TRUE, NOW(), NOW()) 
              RETURNING id`,
             [
               req.user.id,
@@ -646,6 +731,276 @@ router.post('/import', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error importing creations:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get version history for a creation
+router.get('/:id/versions', auth, async (req, res) => {
+  try {
+    const creationId = parseInt(req.params.id);
+    
+    // First, get the creation to check ownership
+    const creationResult = await pool.query(
+      'SELECT * FROM creations WHERE id = $1 AND user_id = $2',
+      [creationId, req.user.id]
+    );
+    
+    if (creationResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Creation not found' });
+    }
+    
+    const creation = creationResult.rows[0];
+    
+    // Get all versions (current creation and its versions, or versions if this is a version)
+    let baseCreationId = creation.parent_version_id || creationId;
+    
+    const versionsResult = await pool.query(
+      `SELECT * FROM creations 
+       WHERE (id = $1 OR parent_version_id = $1) AND user_id = $2 
+       ORDER BY version DESC`,
+      [baseCreationId, req.user.id]
+    );
+    
+    res.json({
+      baseCreationId,
+      currentVersionId: versionsResult.rows.find(v => v.is_current_version)?.id,
+      versions: versionsResult.rows
+    });
+  } catch (error) {
+    console.error('Error fetching version history:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Restore a specific version (make it current)
+router.post('/:id/restore-version/:versionId', auth, async (req, res) => {
+  try {
+    const creationId = parseInt(req.params.id);
+    const versionId = parseInt(req.params.versionId);
+    
+    // Verify both creations belong to user
+    const baseResult = await pool.query(
+      'SELECT * FROM creations WHERE id = $1 AND user_id = $2',
+      [creationId, req.user.id]
+    );
+    
+    const versionResult = await pool.query(
+      'SELECT * FROM creations WHERE id = $1 AND user_id = $2 AND (parent_version_id = $3 OR id = $3)',
+      [versionId, req.user.id, creationId]
+    );
+    
+    if (baseResult.rows.length === 0 || versionResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Creation or version not found' });
+    }
+    
+    const versionToRestore = versionResult.rows[0];
+    
+    // Mark all versions as not current
+    await pool.query(
+      'UPDATE creations SET is_current_version = FALSE WHERE (id = $1 OR parent_version_id = $1) AND user_id = $2',
+      [creationId, req.user.id]
+    );
+    
+    // Create new version based on the restored version
+    const newVersion = await pool.query(
+      'SELECT MAX(version) + 1 as next_version FROM creations WHERE (id = $1 OR parent_version_id = $1)',
+      [creationId]
+    );
+    
+    const nextVersion = newVersion.rows[0].next_version || 1;
+    
+    const restoredResult = await pool.query(
+      `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, version, parent_version_id, is_current_version, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, TRUE, NOW(), NOW()) 
+       RETURNING *`,
+      [
+        req.user.id,
+        versionToRestore.name,
+        versionToRestore.description,
+        versionToRestore.type,
+        versionToRestore.content,
+        versionToRestore.language,
+        versionToRestore.metadata,
+        versionToRestore.framework,
+        versionToRestore.executable,
+        nextVersion,
+        creationId
+      ]
+    );
+    
+    res.json({
+      success: true,
+      message: `Version ${versionToRestore.version} restored as version ${nextVersion}`,
+      newVersion: restoredResult.rows[0]
+    });
+  } catch (error) {
+    console.error('Error restoring version:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get templates (public and user's own)
+router.get('/templates', auth, async (req, res) => {
+  try {
+    const { type, category, search } = req.query;
+    
+    let query = `
+      SELECT * FROM creations 
+      WHERE is_template = TRUE AND is_current_version = TRUE
+      AND (user_id = $1 OR user_id IN (
+        SELECT id FROM users WHERE provider = 'system'
+      ))
+    `;
+    const params = [req.user.id];
+    let paramIndex = 2;
+    
+    // Add type filter
+    if (type && ['code', 'api', 'ui', 'cli'].includes(type)) {
+      query += ` AND type = $${paramIndex}`;
+      params.push(type);
+      paramIndex++;
+    }
+    
+    // Add category filter
+    if (category) {
+      query += ` AND template_category = $${paramIndex}`;
+      params.push(category);
+      paramIndex++;
+    }
+    
+    // Add search filter
+    if (search) {
+      query += ` AND (name ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+    
+    query += ' ORDER BY template_category, name';
+    
+    const result = await pool.query(query, params);
+    
+    // Group by category
+    const groupedTemplates = {};
+    result.rows.forEach(template => {
+      const category = template.template_category || 'General';
+      if (!groupedTemplates[category]) {
+        groupedTemplates[category] = [];
+      }
+      groupedTemplates[category].push(template);
+    });
+    
+    res.json({
+      templates: result.rows,
+      categories: groupedTemplates
+    });
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Create creation from template
+router.post('/templates/:templateId/create', auth, async (req, res) => {
+  try {
+    const templateId = parseInt(req.params.templateId);
+    const { name, description } = req.body;
+    
+    // Get template
+    const templateResult = await pool.query(
+      'SELECT * FROM creations WHERE id = $1 AND is_template = TRUE AND is_current_version = TRUE',
+      [templateId]
+    );
+    
+    if (templateResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    const template = templateResult.rows[0];
+    
+    // Create new creation from template
+    const result = await pool.query(
+      `INSERT INTO creations (user_id, name, description, type, content, language, metadata, framework, executable, version, is_current_version, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1, TRUE, NOW(), NOW()) 
+       RETURNING *`,
+      [
+        req.user.id,
+        name || `${template.name} Copy`,
+        description || template.description,
+        template.type,
+        template.content,
+        template.language,
+        template.metadata,
+        template.framework,
+        template.executable
+      ]
+    );
+    
+    res.status(201).json({
+      success: true,
+      message: 'Creation created from template successfully',
+      creation: result.rows[0],
+      templateUsed: {
+        id: template.id,
+        name: template.name,
+        category: template.template_category
+      }
+    });
+  } catch (error) {
+    console.error('Error creating from template:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Mark creation as template
+router.post('/:id/make-template', auth, async (req, res) => {
+  try {
+    const creationId = parseInt(req.params.id);
+    const { templateCategory = 'User Templates' } = req.body;
+    
+    const result = await pool.query(
+      `UPDATE creations SET is_template = TRUE, template_category = $1, updated_at = NOW()
+       WHERE id = $2 AND user_id = $3 AND is_current_version = TRUE RETURNING *`,
+      [templateCategory, creationId, req.user.id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Creation not found or not current version' });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Creation marked as template successfully',
+      template: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error making template:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Remove template status
+router.post('/:id/remove-template', auth, async (req, res) => {
+  try {
+    const creationId = parseInt(req.params.id);
+    
+    const result = await pool.query(
+      `UPDATE creations SET is_template = FALSE, template_category = NULL, updated_at = NOW()
+       WHERE id = $1 AND user_id = $2 RETURNING *`,
+      [creationId, req.user.id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Creation not found' });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Template status removed successfully',
+      creation: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error removing template status:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

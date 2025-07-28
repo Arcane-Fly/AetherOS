@@ -49,6 +49,11 @@ const createTables = async () => {
       metadata JSONB,
       framework VARCHAR(100),
       executable BOOLEAN DEFAULT FALSE,
+      version INTEGER DEFAULT 1,
+      parent_version_id INTEGER REFERENCES creations(id) ON DELETE SET NULL,
+      is_current_version BOOLEAN DEFAULT TRUE,
+      is_template BOOLEAN DEFAULT FALSE,
+      template_category VARCHAR(100),
       created_at TIMESTAMP DEFAULT NOW(),
       updated_at TIMESTAMP DEFAULT NOW()
     );
@@ -69,6 +74,11 @@ const createTables = async () => {
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_creations_user_id ON creations(user_id);
     CREATE INDEX IF NOT EXISTS idx_creations_type ON creations(type);
+    CREATE INDEX IF NOT EXISTS idx_creations_version ON creations(version);
+    CREATE INDEX IF NOT EXISTS idx_creations_current ON creations(is_current_version);
+    CREATE INDEX IF NOT EXISTS idx_creations_parent ON creations(parent_version_id);
+    CREATE INDEX IF NOT EXISTS idx_creations_template ON creations(is_template);
+    CREATE INDEX IF NOT EXISTS idx_creations_template_category ON creations(template_category);
     CREATE INDEX IF NOT EXISTS idx_creation_links_source ON creation_links(source_id);
     CREATE INDEX IF NOT EXISTS idx_creation_links_target ON creation_links(target_id);
   `;
@@ -77,11 +87,50 @@ const createTables = async () => {
     await pool.query(createUsersTable);
     await pool.query(createCreationsTable);
     await pool.query(createCreationLinksTable);
+    
+    // Add version control columns to existing tables if they don't exist
+    await addVersionControlColumns();
+    
     await pool.query(createIndexes);
     console.log('Database tables created successfully');
   } catch (error) {
     console.error('Error creating tables:', error);
     throw error;
+  }
+};
+
+const addVersionControlColumns = async () => {
+  try {
+    // Check if version column exists
+    const versionColumnCheck = await pool.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'creations' AND column_name = 'version'
+    `);
+    
+    if (versionColumnCheck.rows.length === 0) {
+      console.log('Adding version control columns to existing creations table...');
+      
+      await pool.query(`
+        ALTER TABLE creations 
+        ADD COLUMN IF NOT EXISTS version INTEGER DEFAULT 1,
+        ADD COLUMN IF NOT EXISTS parent_version_id INTEGER REFERENCES creations(id) ON DELETE SET NULL,
+        ADD COLUMN IF NOT EXISTS is_current_version BOOLEAN DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS is_template BOOLEAN DEFAULT FALSE,
+        ADD COLUMN IF NOT EXISTS template_category VARCHAR(100)
+      `);
+      
+      // Update existing records to have version 1 and be current
+      await pool.query(`
+        UPDATE creations 
+        SET version = 1, is_current_version = TRUE 
+        WHERE version IS NULL OR is_current_version IS NULL
+      `);
+      
+      console.log('Version control columns added successfully');
+    }
+  } catch (error) {
+    console.log('Version control columns may already exist or error occurred:', error.message);
   }
 };
 
