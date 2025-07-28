@@ -7,11 +7,9 @@ const pool = new Pool({
 
 const connectDB = async () => {
   try {
-    await pool.connect();
+    const client = await pool.connect();
     console.log('Connected to PostgreSQL database');
-    
-    // Create tables if they don't exist
-    await createTables();
+    client.release();
   } catch (error) {
     console.error('Database connection failed:', error);
     throw error;

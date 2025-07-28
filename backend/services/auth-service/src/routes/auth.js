@@ -9,24 +9,28 @@ const router = express.Router();
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 
-// OAuth routes
-router.get('/google', passport.authenticate('google', { 
-  scope: ['profile', 'email'] 
-}));
+// OAuth routes - only if configured
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  router.get('/google', passport.authenticate('google', { 
+    scope: ['profile', 'email'] 
+  }));
 
-router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  authController.oauthCallback
-);
+  router.get('/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    authController.oauthCallback
+  );
+}
 
-router.get('/github', passport.authenticate('github', { 
-  scope: ['user:email'] 
-}));
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  router.get('/github', passport.authenticate('github', { 
+    scope: ['user:email'] 
+  }));
 
-router.get('/github/callback',
-  passport.authenticate('github', { failureRedirect: '/login' }),
-  authController.oauthCallback
-);
+  router.get('/github/callback',
+    passport.authenticate('github', { failureRedirect: '/login' }),
+    authController.oauthCallback
+  );
+}
 
 // Protected routes
 router.get('/profile', authMiddleware, authController.getProfile);
