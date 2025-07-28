@@ -106,6 +106,18 @@ export const creationService = {
     return apiService.put(`/creations/${id}`, updates);
   },
 
+  async updateCreationWithVersion(id, updates, createNewVersion = true) {
+    return apiService.put(`/creations/${id}`, { ...updates, createNewVersion });
+  },
+
+  async getVersionHistory(id) {
+    return apiService.get(`/creations/${id}/versions`);
+  },
+
+  async restoreVersion(baseId, versionId) {
+    return apiService.post(`/creations/${baseId}/restore-version/${versionId}`);
+  },
+
   async deleteCreation(id) {
     return apiService.delete(`/creations/${id}`);
   },
@@ -179,5 +191,28 @@ export const creationService = {
       overwriteExisting,
       preserveLinks
     });
+  },
+
+  // Template methods
+  async getTemplates(filters = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') queryParams.append(key, value);
+    });
+    
+    const endpoint = queryParams.toString() ? `/creations/templates?${queryParams}` : '/creations/templates';
+    return apiService.get(endpoint);
+  },
+
+  async createFromTemplate(templateId, options = {}) {
+    return apiService.post(`/creations/templates/${templateId}/create`, options);
+  },
+
+  async makeTemplate(creationId, templateCategory = 'User Templates') {
+    return apiService.post(`/creations/${creationId}/make-template`, { templateCategory });
+  },
+
+  async removeTemplate(creationId) {
+    return apiService.post(`/creations/${creationId}/remove-template`);
   }
 };

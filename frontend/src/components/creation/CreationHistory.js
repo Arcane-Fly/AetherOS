@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CreationLinker from './CreationLinker';
 import CreationPreview from '../chat/CreationPreview';
+import TemplateBrowser from './TemplateBrowser';
 import { creationService } from '../../services/api';
 
 const CreationHistory = ({ creations, setCreations }) => {
@@ -14,6 +15,9 @@ const CreationHistory = ({ creations, setCreations }) => {
   const [selectedForExport, setSelectedForExport] = useState([]);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState({});
+  const [versionHistories, setVersionHistories] = useState({});
+  const [showTemplateBrowser, setShowTemplateBrowser] = useState(false);
 
   // Filter and sort creations based on current filters
   useEffect(() => {
@@ -173,6 +177,75 @@ const CreationHistory = ({ creations, setCreations }) => {
     );
   };
 
+  const handleViewVersionHistory = async (creation) => {
+    try {
+      const versionData = await creationService.getVersionHistory(creation.id);
+      setVersionHistories(prev => ({
+        ...prev,
+        [creation.id]: versionData
+      }));
+      setShowVersionHistory(prev => ({
+        ...prev,
+        [creation.id]: !prev[creation.id]
+      }));
+    } catch (error) {
+      console.error('Failed to fetch version history:', error);
+      alert('Failed to load version history. Please try again.');
+    }
+  };
+
+  const handleRestoreVersion = async (baseId, versionId, versionNumber) => {
+    if (!window.confirm(`Are you sure you want to restore version ${versionNumber}? This will create a new version.`)) {
+      return;
+    }
+
+    try {
+      await creationService.restoreVersion(baseId, versionId);
+      alert('Version restored successfully!');
+      // Refresh the creation list
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to restore version:', error);
+      alert('Failed to restore version. Please try again.');
+    }
+  };
+
+  const handleMakeTemplate = async (creation) => {
+    const category = prompt('Enter template category (optional):', 'User Templates');
+    if (category === null) return; // User cancelled
+
+    try {
+      await creationService.makeTemplate(creation.id, category || 'User Templates');
+      alert(`"${creation.name}" has been marked as a template!`);
+      // Refresh the creation list
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to make template:', error);
+      alert('Failed to make template. Please try again.');
+    }
+  };
+
+  const handleRemoveTemplate = async (creation) => {
+    if (!window.confirm(`Remove template status from "${creation.name}"?`)) {
+      return;
+    }
+
+    try {
+      await creationService.removeTemplate(creation.id);
+      alert('Template status removed successfully!');
+      // Refresh the creation list
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to remove template:', error);
+      alert('Failed to remove template status. Please try again.');
+    }
+  };
+
+  const handleTemplateSelect = (newCreation, template) => {
+    // Add the new creation to the list
+    setCreations(prev => [newCreation, ...prev]);
+  };
+
   const getTypeIcon = (type) => {
     const icons = {
       code: '🔧',
@@ -200,6 +273,13 @@ const CreationHistory = ({ creations, setCreations }) => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-800">Creation History</h3>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowTemplateBrowser(true)}
+            className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg hover:bg-indigo-200"
+            title="Browse templates"
+          >
+            📋 Templates
+          </button>
           {creations.length > 0 && (
             <>
               <button
@@ -421,6 +501,17 @@ const CreationHistory = ({ creations, setCreations }) => {
                       <span className={`px-2 py-1 text-xs rounded-full ${getTypeColor(creation.type)}`}>
                         {creation.type.toUpperCase()}
                       </span>
+                      {creation.version && (
+                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                          v{creation.version}
+                          {creation.version_count > 1 && ` (${creation.version_count} versions)`}
+                        </span>
+                      )}
+                      {creation.is_template && (
+                        <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded-full">
+                          📋 TEMPLATE
+                        </span>
+                      )}
                       {creation.executable && (
                         <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
                           EXECUTABLE
@@ -458,6 +549,47 @@ const CreationHistory = ({ creations, setCreations }) => {
                 </div>
                 
                 <div className="flex space-x-1 ml-2">
+                  {creation.version_count > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewVersionHistory(creation);
+                      }}
+                      className="text-gray-400 hover:text-indigo-600 p-1"
+                      title="View version history"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  )}
+                  {creation.is_template ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveTemplate(creation);
+                      }}
+                      className="text-gray-400 hover:text-indigo-600 p-1"
+                      title="Remove template status"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMakeTemplate(creation);
+                      }}
+                      className="text-gray-400 hover:text-indigo-600 p-1"
+                      title="Make template"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -498,6 +630,51 @@ const CreationHistory = ({ creations, setCreations }) => {
                   </button>
                 </div>
               </div>
+
+              {/* Version History Section */}
+              {showVersionHistory[creation.id] && versionHistories[creation.id] && (
+                <div className="mt-3 border-t pt-3">
+                  <h5 className="text-sm font-medium text-gray-700 mb-2">Version History</h5>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {versionHistories[creation.id].versions.map((version, index) => (
+                      <div 
+                        key={version.id} 
+                        className={`p-2 rounded text-xs ${
+                          version.is_current_version 
+                            ? 'bg-green-50 border border-green-200' 
+                            : 'bg-gray-50 border border-gray-200'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <span className="font-medium">Version {version.version}</span>
+                            {version.is_current_version && (
+                              <span className="ml-2 px-1 py-0.5 bg-green-100 text-green-700 rounded text-xs">Current</span>
+                            )}
+                            <div className="text-gray-500 mt-1">
+                              {new Date(version.created_at).toLocaleString()}
+                            </div>
+                          </div>
+                          {!version.is_current_version && (
+                            <button
+                              onClick={() => handleRestoreVersion(versionHistories[creation.id].baseCreationId, version.id, version.version)}
+                              className="px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200"
+                            >
+                              Restore
+                            </button>
+                          )}
+                        </div>
+                        {version.description && (
+                          <div className="mt-1 text-gray-600 text-xs">
+                            {version.description.substring(0, 100)}
+                            {version.description.length > 100 && '...'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {creation.content && (
                 <details className="mt-3">
@@ -515,6 +692,14 @@ const CreationHistory = ({ creations, setCreations }) => {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Template Browser */}
+      {showTemplateBrowser && (
+        <TemplateBrowser
+          onTemplateSelect={handleTemplateSelect}
+          onClose={() => setShowTemplateBrowser(false)}
+        />
       )}
     </div>
   );
