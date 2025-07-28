@@ -78,8 +78,24 @@ export const generationService = {
 
 // Creation Service
 export const creationService = {
-  async getCreations() {
-    return apiService.get('/creations');
+  async getCreations(filters = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value);
+    });
+    
+    const endpoint = queryParams.toString() ? `/creations?${queryParams}` : '/creations';
+    return apiService.get(endpoint);
+  },
+
+  async searchCreations(filters = {}) {
+    const queryParams = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') queryParams.append(key, value);
+    });
+    
+    const endpoint = queryParams.toString() ? `/creations/search?${queryParams}` : '/creations/search';
+    return apiService.get(endpoint);
   },
 
   async createCreation(creation) {
@@ -116,5 +132,52 @@ export const creationService = {
 
   async getCreationMesh() {
     return apiService.get('/creations/mesh');
+  },
+
+  async exportCreation(id) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/creations/${id}/export`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+    
+    return response.blob();
+  },
+
+  async exportMultipleCreations(creationIds = null, includeLinks = true) {
+    const body = { includeLinks };
+    if (creationIds) {
+      body.creationIds = creationIds;
+    }
+    
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/creations/export`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+    
+    return response.blob();
+  },
+
+  async importCreations(importData, options = {}) {
+    const { overwriteExisting = false, preserveLinks = true } = options;
+    return apiService.post('/creations/import', {
+      importData,
+      overwriteExisting,
+      preserveLinks
+    });
   }
 };
