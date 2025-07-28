@@ -46,9 +46,9 @@ class CLIGenerator {
   }
 
   detectCLILanguage(code) {
-    if (/#!/bin\/bash|#!/bin\/sh/i.test(code)) return 'bash';
-    if (/#!/usr\/bin\/env python|import\s+argparse/i.test(code)) return 'python';
-    if (/#!/usr\/bin\/env node|require.*commander|process\.argv/i.test(code)) return 'javascript';
+    if (/^#!\/bin\/bash|^#!\/bin\/sh/i.test(code)) return 'bash';
+    if (/^#!\/usr\/bin\/env python|import\s+argparse/i.test(code)) return 'python';
+    if (/^#!\/usr\/bin\/env node|require.*commander|process\.argv/i.test(code)) return 'javascript';
     if (/package\s+main|import\s+"flag"/i.test(code)) return 'go';
     if (/use\s+clap::|fn\s+main\(\)/i.test(code)) return 'rust';
     
