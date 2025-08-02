@@ -4,92 +4,95 @@ This document establishes consistent code formatting and naming conventions for 
 
 ## General Principles
 
-*   **Readability First:** Code should be easy to read and understand by other developers.
-*   **Consistency:** Apply these rules uniformly across the entire codebase.
-*   **Automated Enforcement:** Use linters and formatters to enforce these standards automatically.
+*   **Readability First:** Code should be easy to read and understand by other developers
+*   **Consistency:** Apply these rules uniformly across the entire codebase
+*   **Automated Enforcement:** Use linters and formatters to enforce these standards automatically
+*   **Team Agreement:** These standards are agreed upon by the development team
 
 ## Formatting (All Languages)
 
 ### Indentation
 
-*   **Spaces:** Use 2 spaces for indentation. No tabs.
-*   **Rationale:** Ensures consistent appearance across different editors and environments.
+*   **Spaces:** Use 2 spaces for indentation. No tabs
+*   **Rationale:** Ensures consistent appearance across different editors and environments
 
 ### Line Length
 
-*   **Maximum:** 100 characters per line.
-*   **Rationale:** Balances readability with information density.
+*   **Maximum:** 100 characters per line
+*   **Rationale:** Balances readability with information density, works well with modern displays
 
 ### Whitespace
 
-*   Trailing whitespace at the end of lines is prohibited.
-*   Use a single blank line to separate logical sections of code.
-*   Files should end with a single newline character.
+*   Trailing whitespace at the end of lines is prohibited
+*   Use a single blank line to separate logical sections of code
+*   Files should end with a single newline character
+*   No multiple consecutive blank lines
 
 ## Naming Conventions
 
-### TypeScript / JavaScript / NestJS
+### JavaScript / Node.js
 
 *   **Variables & Functions:** `camelCase`
-*   **Classes, Interfaces, Types, Enums:** `PascalCase`
-*   **Constants:** `UPPER_SNAKE_CASE` (especially for configuration values)
-*   **Private Members:** Prefix with `_` (e.g., `private _internalState: string;`)
-*   **Files:** Use `kebab-case` for filenames (e.g., `user.service.ts`, `auth.controller.ts`).
-*   **Directories:** Use `kebab-case` for directory names.
+*   **Constants:** `UPPER_SNAKE_CASE` (for module-level constants)
+*   **Classes:** `PascalCase`
+*   **Files:** Use `kebab-case` for filenames (e.g., `user-service.js`, `auth-controller.js`)
+*   **Directories:** Use `kebab-case` for directory names
+*   **Private Methods:** Prefix with `_` (e.g., `_validateInput()`)
 
-### Python
+### React Components
 
-*   **Variables, Functions, Methods:** `snake_case`
-*   **Classes, Exceptions:** `PascalCase`
-*   **Constants:** `UPPER_SNAKE_CASE`
-*   **Private Members:** Prefix with `_` (single underscore) or `__` (double underscore for name mangling).
-*   **Files & Modules:** `snake_case.py`
-*   **Packages:** `lowercase` (preferably single word, or `snake_case` if necessary).
+*   **Component Names:** `PascalCase` (e.g., `UserProfile`, `ChatMessage`)
+*   **Component Files:** `PascalCase.js` or `PascalCase.jsx` (e.g., `UserProfile.jsx`)
+*   **Props:** `camelCase`
+*   **Event Handlers:** `handle` prefix (e.g., `handleClick`, `handleSubmit`)
+*   **Custom Hooks:** `use` prefix (e.g., `useAuth`, `useLocalStorage`)
 
-### Go
+### CSS Classes (Tailwind)
 
-*   **Variables, Functions, Methods, Packages:** `camelCase` (public/exported start with `Capital`, private with `lowercase`)
-*   **Types, Structs, Interfaces:** `PascalCase`
-*   **Constants:** `UPPER_SNAKE_CASE` or `camelCase` depending on scope (prefer `UPPER_SNAKE_CASE` for package-level constants).
-*   **Files:** `snake_case.go`
+*   Follow Tailwind CSS utility naming conventions
+*   Use semantic class names for custom CSS when needed
+*   Organize Tailwind classes logically: layout → spacing → sizing → colors → typography → effects
 
-### SQL (PostgreSQL)
+### Database (PostgreSQL)
 
-*   **Tables, Columns, Constraints:** `snake_case`
+*   **Tables:** `snake_case` (e.g., `user_profiles`, `chat_messages`)
+*   **Columns:** `snake_case` (e.g., `first_name`, `created_at`)
 *   **Primary Keys:** `id`
 *   **Foreign Keys:** `{referenced_table_singular}_id` (e.g., `user_id`)
+*   **Constraints:** Descriptive names with table prefixes
 
 ## File Organization Patterns
 
-### Backend (NestJS)
+### Backend (Express.js Microservices)
 
 ```
 src/
-├── modules/
-│   ├── auth/
-│   │   ├── dto/
-│   │   ├── entities/ (or models/)
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   ├── auth.module.ts
-│   │   └── guards/ (if needed)
-│   ├── creation/
-│   │   ├── dto/
-│   │   ├── entities/
-│   │   ├── creation.controller.ts
-│   │   ├── creation.service.ts
-│   │   ├── creation.module.ts
-│   │   └── ...
-│   └── app.module.ts
-├── shared/
-│   ├── exceptions/
-│   ├── filters/
-│   ├── guards/
-│   ├── interceptors/
-│   └── utils/
-├── main.ts
-└── config/
-    └── configuration.ts
+├── controllers/
+│   ├── auth.controller.js
+│   ├── user.controller.js
+│   └── generation.controller.js
+├── services/
+│   ├── auth.service.js
+│   ├── openai.service.js
+│   └── database.service.js
+├── middleware/
+│   ├── auth.middleware.js
+│   ├── validation.middleware.js
+│   └── rate-limit.middleware.js
+├── models/
+│   ├── user.model.js
+│   └── creation.model.js
+├── routes/
+│   ├── auth.routes.js
+│   ├── api.routes.js
+│   └── index.js
+├── utils/
+│   ├── logger.js
+│   ├── validation.js
+│   └── helpers.js
+├── config/
+│   └── database.js
+└── server.js
 ```
 
 ### Frontend (React)
@@ -97,45 +100,124 @@ src/
 ```
 src/
 ├── components/
-│   ├── ui/ (atoms/molecules)
-│   ├── layout/ (organisms/templates)
-│   └── specific/ (page-specific components)
+│   ├── ui/              # Reusable UI components
+│   │   ├── Button.jsx
+│   │   ├── Input.jsx
+│   │   └── Modal.jsx
+│   ├── layout/          # Layout components
+│   │   ├── Header.jsx
+│   │   ├── Sidebar.jsx
+│   │   └── Footer.jsx
+│   └── features/        # Feature-specific components
+│       ├── auth/
+│       ├── chat/
+│       └── generation/
 ├── pages/
-│   ├── Home/
-│   │   ├── Home.tsx
-│   │   ├── Home.module.css (or use Tailwind classes)
-│   │   └── index.ts (for exports)
-│   └── ...
-├── services/ (API clients)
+│   ├── Home.jsx
+│   ├── Login.jsx
+│   └── Dashboard.jsx
 ├── hooks/
-├── store/ (Redux slices, store setup)
+│   ├── useAuth.js
+│   ├── useApi.js
+│   └── useLocalStorage.js
+├── services/
+│   ├── api.js
+│   ├── auth.service.js
+│   └── socket.service.js
 ├── utils/
-├── types/
+│   ├── helpers.js
+│   ├── constants.js
+│   └── validators.js
 ├── assets/
-├── App.tsx
-└── main.tsx
+│   ├── images/
+│   └── icons/
+├── App.jsx
+└── index.js
+```
+
+## Code Documentation
+
+### Comments
+
+*   Use comments to explain **why**, not **what**
+*   Write clear, concise comments in English
+*   Avoid obvious comments that just restate the code
+*   Use JSDoc format for function documentation
+
+### JSDoc Examples
+
+```javascript
+/**
+ * Generates code based on user prompt using OpenAI API
+ * @param {string} prompt - The user's natural language prompt
+ * @param {string} language - Target programming language
+ * @param {Object} options - Additional generation options
+ * @returns {Promise<Object>} Generated code and metadata
+ * @throws {Error} When API call fails or quota exceeded
+ */
+async function generateCode(prompt, language, options = {}) {
+  // Implementation
+}
 ```
 
 ## Linting & Formatting Tools
 
-### TypeScript / JavaScript
+### JavaScript/React
 
 *   **Formatter:** Prettier
-*   **Linter:** ESLint (with recommended TypeScript/React configs)
-*   **Configuration:** Shareable configs via `package.json` or `.eslintrc.js`.
+*   **Linter:** ESLint with React and Node.js configurations
+*   **Configuration:** Use `.eslintrc.js` and `.prettierrc` files
+*   **Editor Integration:** Enable format on save
 
-### Python
+### Package Manager Commands
 
-*   **Formatter:** Black
-*   **Linter:** Ruff (combines flake8, isort, and more)
-*   **Configuration:** `pyproject.toml` or `setup.cfg`.
+```bash
+# Install and setup linting
+yarn add -D eslint prettier eslint-config-prettier eslint-plugin-react
 
-### Go
+# Run linting
+yarn lint
 
-*   **Formatter:** `gofmt` (standard)
-*   **Linter:** `golangci-lint`
-*   **Configuration:** `.golangci.yml`.
+# Run formatting
+yarn format
 
-### SQL
+# Fix linting issues automatically
+yarn lint --fix
+```
 
-*   **Formatter/Linter:** `sqlfluff`
+### Recommended ESLint Configuration
+
+```javascript
+// .eslintrc.js
+module.exports = {
+  env: {
+    node: true,
+    browser: true,
+    es2021: true,
+  },
+  extends: [
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'prettier',
+  ],
+  rules: {
+    'no-console': 'warn',
+    'no-unused-vars': 'error',
+    'prefer-const': 'error',
+    'react/prop-types': 'off', // Turn off if using TypeScript
+  },
+};
+```
+
+### Recommended Prettier Configuration
+
+```json
+{
+  "semi": true,
+  "trailingComma": "es5",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false
+}
+```
