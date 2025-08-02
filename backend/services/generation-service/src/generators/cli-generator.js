@@ -1,4 +1,5 @@
 const LLMClient = require('../llm/client');
+const { getDefaultModel } = require('../config/models');
 
 class CLIGenerator {
   constructor() {
@@ -25,7 +26,7 @@ class CLIGenerator {
         metadata: {
           timestamp: new Date().toISOString(),
           prompt: prompt,
-          model: 'gpt-3.5-turbo'
+          model: process.env.OPENAI_CLI_MODEL || getDefaultModel('cli') // Updated to follow MODELS_MANIFEST.md
         }
       };
     } catch (error) {

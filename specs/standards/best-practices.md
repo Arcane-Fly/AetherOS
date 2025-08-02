@@ -2,73 +2,155 @@
 
 This document outlines the core principles and practices for developing high-quality, secure, and maintainable code for AetherOS.
 
+## Context
+
+Global development guidelines for AetherOS projects.
+
+<conditional-block context-check="core-principles">
+IF this Core Principles section already read in current context:
+  SKIP: Re-reading this section
+  NOTE: "Using Core Principles already in context"
+ELSE:
+  READ: The following principles
+
+## Core Principles
+
+### Keep It Simple
+- Implement code in the fewest lines possible
+- Avoid over-engineering solutions
+- Choose straightforward approaches over clever ones
+- Prefer composition over inheritance
+
+### Optimize for Readability
+- Prioritize code clarity over micro-optimizations
+- Write self-documenting code with clear variable names
+- Add comments for "why" not "what"
+- Use consistent naming conventions across the codebase
+
+### DRY (Don't Repeat Yourself)
+- Extract repeated business logic to reusable functions
+- Extract repeated UI markup to reusable components
+- Create utility functions for common operations
+- Share common configuration across services
+
+### File Structure
+- Keep files focused on a single responsibility
+- Group related functionality together
+- Use consistent naming conventions
+- Follow established project structure patterns
+</conditional-block>
+
 ## Development Process
 
-*   **Git Workflow:** Trunk-based development or Feature Branching with Pull Requests.
-*   **Branch Naming:** `feature/JIRA-ID-short-description`, `bugfix/JIRA-ID-short-description`, `hotfix/JIRA-ID-short-description`.
-*   **Commit Messages:** Conventional Commits format (`<type>(<scope>): <description>`).
-*   **Pull Requests:** Require review by at least one other developer. Use PR templates.
-*   **Continuous Integration (CI):** Run linting, formatting checks, unit tests, and security scans on every PR.
+*   **Git Workflow:** Feature branching with Pull Requests
+*   **Branch Naming:** `feature/issue-number-short-description`, `bugfix/issue-number-short-description`, `hotfix/issue-number-short-description`
+*   **Commit Messages:** Conventional Commits format (`<type>(<scope>): <description>`)
+*   **Pull Requests:** Require review by at least one other developer. Use descriptive PR descriptions
+*   **Continuous Integration (CI):** Run linting, formatting checks, unit tests, and security scans on every PR
+
+## Package Management Best Practices
+
+### JavaScript/Node.js
+- **Primary:** Use `yarn` for all new projects and dependency management
+- **Lock Files:** Always commit `yarn.lock` files, remove `package-lock.json` files
+- **Scripts:** Use `yarn run <script>` or `yarn <script>` for package scripts
+- **Dependencies:** Use `yarn add` for runtime dependencies, `yarn add -D` for dev dependencies
+
+### Version Management
+- Pin exact versions for critical dependencies in production
+- Use semantic versioning ranges carefully (prefer `~` over `^` for patch updates)
+- Regularly audit and update dependencies with `yarn audit`
 
 ## Testing Philosophy
 
-*   **Strategy:** A balanced approach combining Unit Testing, Integration Testing, and Contract Testing. Emphasis on testing critical business logic and user flows.
+*   **Strategy:** A balanced approach combining Unit Testing, Integration Testing, and End-to-End Testing. Emphasis on testing critical business logic and user flows.
 *   **Unit Testing:**
-    *   **Target:** Individual functions, methods, and isolated units of logic.
-    *   **Framework (TS):** Jest
-    *   **Framework (Python):** Pytest
-    *   **Framework (Go):** Standard `testing` package
-    *   **Coverage Goal:** Aim for >80% coverage on core business logic modules.
+    *   **Target:** Individual functions, methods, and isolated units of logic
+    *   **Framework:** Jest for both frontend and backend
+    *   **Coverage Goal:** Aim for >80% coverage on core business logic modules
+    *   **Mocking:** Use Jest mocks for external dependencies and API calls
 *   **Integration Testing:**
-    *   **Target:** Interaction between modules, services, and external dependencies (databases, APIs).
-    *   **Framework (TS):** Jest (with testcontainers or mocks) / Supertest for API endpoints.
-    *   **Framework (Python):** Pytest (with pytest-docker or moto for AWS mocks).
-*   **End-to-End (E2E) Testing (Optional for MVP):**
-    *   **Target:** Critical user journeys simulating real user behavior.
-    *   **Tool:** Playwright or Cypress.
-*   **Test Data:** Use factories (e.g., FactoryBoy for Python, factory-girl for JS) or fixtures to manage test data cleanly.
+    *   **Target:** Interaction between modules, services, and external dependencies (databases, APIs)
+    *   **Framework:** Jest with Supertest for API endpoints
+    *   **Database:** Use test databases or in-memory alternatives
+*   **End-to-End (E2E) Testing:**
+    *   **Target:** Critical user journeys simulating real user behavior
+    *   **Tool:** Playwright for comprehensive browser testing
+    *   **Focus:** Authentication flows, core generation features, UI interactions
+*   **Test Data:** Use factories or fixtures to manage test data cleanly and consistently
+
+<conditional-block context-check="dependencies" task-condition="choosing-external-library">
+IF current task involves choosing an external library:
+  IF Dependencies section already read in current context:
+    SKIP: Re-reading this section
+    NOTE: "Using Dependencies guidelines already in context"
+  ELSE:
+    READ: The following guidelines
+ELSE:
+  SKIP: Dependencies section not relevant to current task
+
+## Dependencies
+
+### Choose Libraries Wisely
+When adding third-party dependencies:
+- Select the most popular and actively maintained option
+- Check the library's GitHub repository for:
+  - Recent commits (within last 6 months)
+  - Active issue resolution
+  - Number of stars/downloads
+  - Clear documentation
+- Prefer libraries with TypeScript support or type definitions
+- Consider bundle size impact for frontend dependencies
+- Evaluate security track record and vulnerability history
+</conditional-block>
 
 ## Performance vs Readability
 
-*   **Default:** Prioritize readability and maintainability.
-*   **Optimization:** Profile and optimize only when performance bottlenecks are identified through monitoring or load testing.
-*   **Documentation:** Clearly document any intentional trade-offs made for performance reasons.
+*   **Default:** Prioritize readability and maintainability
+*   **Optimization:** Profile and optimize only when performance bottlenecks are identified through monitoring or load testing
+*   **Documentation:** Clearly document any intentional trade-offs made for performance reasons
+*   **Caching:** Implement intelligent caching strategies for API responses and expensive operations
 
 ## Security Considerations
 
-*   **Principle of Least Privilege:** Services and users should have only the minimum permissions necessary.
-*   **Input Validation:** Validate and sanitize *all* inputs (API requests, user data, file uploads) at the boundary layer.
-*   **Dependency Management:** Regularly scan dependencies for vulnerabilities using tools like `npm audit`, `pip-audit`, `govulncheck`. Automate updates where possible.
+*   **Principle of Least Privilege:** Services and users should have only the minimum permissions necessary
+*   **Input Validation:** Validate and sanitize *all* inputs (API requests, user data, file uploads) at the boundary layer
+*   **Dependency Management:** Regularly scan dependencies for vulnerabilities using `yarn audit` and automated security tools
 *   **Authentication & Authorization:**
-    *   Implement robust authentication (OAuth 2.0/JWT) and authorization (RBAC) as per `tech-stack.md`.
-    *   Never log sensitive information (passwords, tokens, PII).
+    *   Implement robust JWT authentication with proper token expiration
+    *   Use secure OAuth 2.0 flows for third-party authentication (Google, GitHub)
+    *   Never log sensitive information (passwords, tokens, PII)
 *   **Secure Coding Practices:**
-    *   Prevent common vulnerabilities (OWASP Top 10): Injection (SQL, NoSQL, command), Broken Authentication, Sensitive Data Exposure, XXE, Broken Access Control, Security Misconfiguration, XSS, Insecure Deserialization, Using Components with Known Vulnerabilities, Insufficient Logging & Monitoring.
-    *   Use parameterized queries for database interactions.
-    *   Implement proper Content Security Policy (CSP) headers for the frontend.
-*   **Secrets Management:** Never hardcode secrets. Use environment variables and secure secret stores (Vault, cloud providers).
-*   **Execution Sandboxing:** Isolate user-generated code execution in restricted environments (Docker containers with resource limits, dropped capabilities, network restrictions).
+    *   Prevent common vulnerabilities (OWASP Top 10): Injection, Broken Authentication, XSS, etc.
+    *   Use parameterized queries for database interactions
+    *   Implement proper Content Security Policy (CSP) headers
+    *   Use HTTPS everywhere in production
+*   **Secrets Management:** Never hardcode secrets. Use environment variables and secure secret stores
+*   **Rate Limiting:** Implement rate limiting on all public API endpoints to prevent abuse
 
 ## API Design Best Practices
 
-*   **Versioning:** Version APIs in the path (`/api/v1/...`) or via headers.
-*   **RESTful Design:** Use standard HTTP methods (GET, POST, PUT, PATCH, DELETE) correctly. Use nouns for resources.
-*   **Error Handling:** Return consistent error response formats (e.g., `{ "error": { "code": "NOT_FOUND", "message": "Resource not found", "details": {...} } }`). Use appropriate HTTP status codes.
-*   **Rate Limiting:** Implement rate limiting on API endpoints to prevent abuse.
-*   **Documentation:** Maintain up-to-date API documentation (Swagger/OpenAPI). The `ai1docs.abacusai.app` consolidation effort should inform how we structure and present our *own* API documentation.
+*   **RESTful Design:** Use standard HTTP methods (GET, POST, PUT, PATCH, DELETE) correctly
+*   **Resource Naming:** Use nouns for resources, not verbs (e.g., `/users` not `/getUsers`)
+*   **Error Handling:** Return consistent error response formats with appropriate HTTP status codes
+*   **Validation:** Use Joi or similar validation library for request validation
+*   **Documentation:** Maintain clear API documentation with request/response examples
+*   **Versioning:** Consider API versioning strategy for future changes
 
-## Observability
+## Microservices Best Practices
 
-*   **Logging:** Use structured logging (JSON format) with consistent fields (timestamp, level, service, trace_id, span_id). Use appropriate log levels (DEBUG, INFO, WARN, ERROR).
-*   **Metrics:** Instrument key business and system metrics (request latency, error rates, user activity). Use Prometheus format.
-*   **Tracing:** Implement distributed tracing (OpenTelemetry) to track requests across services.
-*   **Monitoring & Alerting:** Set up dashboards (Grafana) and alerts for critical metrics and errors.
+*   **Service Independence:** Each service should be independently deployable and scalable
+*   **Communication:** Use HTTP/REST for synchronous communication, events for asynchronous
+*   **Data Isolation:** Each service should own its data and database schema
+*   **Health Checks:** Implement health check endpoints for all services
+*   **Circuit Breakers:** Implement circuit breaker patterns for external service calls
+*   **Logging:** Use structured logging with correlation IDs across service calls
 
 ## AI Integration Specifics
 
-*   **Prompt Engineering:** Treat prompts as code. Version control them. Use prompt templates.
-*   **Model Evaluation:** Implement mechanisms to evaluate and log the quality/relevance of AI outputs.
-*   **Fallbacks:** Design fallback logic for AI service failures or poor-quality outputs.
-*   **Cost Management:** Monitor and optimize LLM usage costs. Implement caching for frequent or expensive prompts where appropriate.
-*   **Bias & Fairness:** Be aware of potential biases in LLM outputs and implement checks or guidelines where necessary.
-*   **Rate Limiting & Retries:** Implement robust retry logic with exponential backoff for AI API calls, respecting provider-specific rate limits (as documented in `ai1docs.abacusai.app`).
+*   **Prompt Engineering:** Treat prompts as code - version control them and use templates
+*   **Model Evaluation:** Log and monitor the quality/relevance of AI outputs
+*   **Fallbacks:** Design fallback logic for AI service failures or poor-quality outputs
+*   **Cost Management:** Monitor and optimize LLM usage costs through caching and intelligent routing
+*   **Rate Limiting & Retries:** Implement robust retry logic with exponential backoff for AI API calls
+*   **Error Handling:** Graceful degradation when AI services are unavailable

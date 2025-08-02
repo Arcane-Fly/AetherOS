@@ -1,4 +1,5 @@
 const LLMClient = require('../llm/client');
+const { getDefaultModel } = require('../config/models');
 
 class CodeGenerator {
   constructor() {
@@ -28,7 +29,7 @@ class CodeGenerator {
         metadata: {
           timestamp: new Date().toISOString(),
           prompt: prompt,
-          model: 'gpt-3.5-turbo'
+          model: process.env.OPENAI_CODE_MODEL || getDefaultModel('code') // Updated to follow MODELS_MANIFEST.md
         }
       };
     } catch (error) {

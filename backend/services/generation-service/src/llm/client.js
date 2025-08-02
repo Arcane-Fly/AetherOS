@@ -1,5 +1,11 @@
 const OpenAI = require('openai');
+const { getDefaultModel, isValidModel, getModelConfig } = require('../config/models');
 
+/**
+ * LLM Client following MODELS_MANIFEST.md specifications
+ * Supports OpenAI models as defined in specs/standards/MODELS_MANIFEST.md
+ * Default models prioritize cost-efficiency and performance as per manifest guidelines
+ */
 class LLMClient {
   constructor() {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your-openai-api-key-here') {
@@ -18,7 +24,15 @@ class LLMClient {
         throw new Error('OpenAI client not initialized - check API key configuration');
       }
 
-      const model = options.model || 'gpt-3.5-turbo';
+      // Use models from MODELS_MANIFEST.md - default to gpt-4o-mini for cost efficiency
+      let model = options.model || process.env.OPENAI_DEFAULT_MODEL || getDefaultModel('general');
+      
+      // Validate model is supported according to MODELS_MANIFEST.md
+      if (!isValidModel(model)) {
+        logger?.warn(`Unsupported model ${model}, falling back to default`, { requestedModel: model });
+        model = getDefaultModel('general');
+      }
+      
       const maxTokens = options.maxTokens || 2000;
       
       logger?.info('Starting OpenAI completion request', {
@@ -70,7 +84,9 @@ class LLMClient {
       content: prompt
     };
 
+    // Use gpt-4o-mini for code generation - good balance of capability and cost per MODELS_MANIFEST.md
     return this.generateCompletion([systemMessage, userMessage], {
+      model: process.env.OPENAI_CODE_MODEL || getDefaultModel('code'),
       temperature: 0.3 // Lower temperature for more deterministic code generation
     }, logger);
   }
@@ -92,7 +108,10 @@ class LLMClient {
       content: prompt
     };
 
-    return this.generateCompletion([systemMessage, userMessage], {}, logger);
+    // Use gpt-4o for complex API design tasks as per MODELS_MANIFEST.md capabilities
+    return this.generateCompletion([systemMessage, userMessage], {
+      model: process.env.OPENAI_API_MODEL || getDefaultModel('api')
+    }, logger);
   }
 
   async generateUI(prompt, logger = null) {
@@ -113,7 +132,10 @@ class LLMClient {
       content: prompt
     };
 
-    return this.generateCompletion([systemMessage, userMessage], {}, logger);
+    // Use gpt-4o for UI generation with multimodal capabilities as per MODELS_MANIFEST.md
+    return this.generateCompletion([systemMessage, userMessage], {
+      model: process.env.OPENAI_UI_MODEL || getDefaultModel('ui')
+    }, logger);
   }
 
   async generateCLI(prompt, logger = null) {
@@ -134,7 +156,10 @@ class LLMClient {
       content: prompt
     };
 
-    return this.generateCompletion([systemMessage, userMessage], {}, logger);
+    // Use gpt-4o-mini for CLI generation - cost-efficient for structured output as per MODELS_MANIFEST.md
+    return this.generateCompletion([systemMessage, userMessage], {
+      model: process.env.OPENAI_CLI_MODEL || getDefaultModel('cli')
+    }, logger);
   }
 }
 

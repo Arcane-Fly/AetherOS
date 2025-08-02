@@ -4,11 +4,15 @@
   "description": "AetherOS - Dynamic Generative Operating Environment",
   "main": "index.js",
   "scripts": {
-    "dev": "docker-compose up --build",
-    "start": "docker-compose up",
-    "stop": "docker-compose down",
+    "dev": "docker compose up --build",
+    "start": "docker compose up",
+    "stop": "docker compose down",
     "migrate": "node scripts/migrate.js",
-    "setup": "./scripts/setup.sh"
+    "setup": "./scripts/setup.sh",
+    "install:all": "yarn install && cd frontend && yarn install && cd ../backend/services/auth-service && yarn install && cd ../generation-service && yarn install && cd ../websocket-service && yarn install",
+    "lint": "cd frontend && yarn lint && cd ../backend/services/auth-service && yarn lint && cd ../generation-service && yarn lint && cd ../websocket-service && yarn lint",
+    "test": "cd frontend && yarn test && cd ../backend/services/auth-service && yarn test && cd ../generation-service && yarn test && cd ../websocket-service && yarn test",
+    "build": "cd frontend && yarn build"
   },
   "keywords": [
     "generative",
@@ -24,5 +28,10 @@
   },
   "dependencies": {
     "pg": "^8.16.3"
+  },
+  "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": ">=20.0.0",
+    "yarn": ">=1.22.0"
   }
 }
