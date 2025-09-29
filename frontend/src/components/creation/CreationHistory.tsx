@@ -87,7 +87,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
           ...creation,
           links: [...(creation.links || []), ...linkData.targetIds.map(id => ({
             targetId: id,
-            type: linkData.linkType,
+            type: linkData.linkType as 'reference' | 'extends' | 'imports' | 'dependency',
             timestamp: new Date()
           }))]
         };
@@ -103,7 +103,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
     setSortOrder('DESC');
   };
 
-  const handleExportSingle = async (creation) => {
+  const handleExportSingle = async (creation: Creation): Promise<void> => {
     try {
       const blob = await creationService.exportCreation(creation.id);
       const url = window.URL.createObjectURL(blob);
@@ -120,7 +120,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
     }
   };
 
-  const handleExportMultiple = async () => {
+  const handleExportMultiple = async (): Promise<void> => {
     try {
       const ids = selectedForExport.length > 0 ? selectedForExport : null;
       const blob = await creationService.exportMultipleCreations(ids);
@@ -141,8 +141,8 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
     }
   };
 
-  const handleImport = async (event) => {
-    const file = event.target.files[0];
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     try {

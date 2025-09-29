@@ -4,6 +4,7 @@ import ChatInterface from './components/chat/ChatInterface';
 import AuthForm from './components/auth/AuthForm';
 import OAuthCallback from './components/auth/OAuthCallback';
 import CreationHistory from './components/creation/CreationHistory';
+import GlassDemo from './pages/GlassDemo';
 import { authService } from './services/auth';
 import type { User } from './types/auth';
 import type { Creation } from './types/api';
@@ -69,6 +70,10 @@ const App: React.FC = () => {
             <Route 
               path="/oauth/callback" 
               element={<OAuthCallback onLogin={handleLogin} />} 
+            />
+            <Route 
+              path="/demo" 
+              element={<GlassDemo />} 
             />
             <Route 
               path="/" 
