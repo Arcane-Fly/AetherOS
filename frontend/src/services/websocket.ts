@@ -1,12 +1,29 @@
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
+
+interface ChatMessage {
+  id: string;
+  text: string;
+  userId: number;
+  timestamp: Date;
+}
+
+interface CreationUpdate {
+  id: number;
+  field: string;
+  value: any;
+  timestamp: Date;
+}
 
 class WebSocketService {
+  private socket: Socket | null;
+  private connected: boolean;
+
   constructor() {
     this.socket = null;
     this.connected = false;
   }
 
-  connect(token) {
+  connect(token: string): Socket | null {
     if (this.socket) {
       this.disconnect();
     }
@@ -37,7 +54,7 @@ class WebSocketService {
     return this.socket;
   }
 
-  disconnect() {
+  disconnect(): void {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
@@ -45,113 +62,113 @@ class WebSocketService {
     }
   }
 
-  isConnected() {
+  isConnected(): boolean {
     return this.connected;
   }
 
   // Chat collaboration
-  joinChatRoom(userId) {
+  joinChatRoom(userId: number): void {
     if (this.socket) {
       this.socket.emit('join_chat', { userId });
     }
   }
 
-  leaveChatRoom(userId) {
+  leaveChatRoom(userId: number): void {
     if (this.socket) {
       this.socket.emit('leave_chat', { userId });
     }
   }
 
-  sendMessage(message) {
+  sendMessage(message: ChatMessage): void {
     if (this.socket) {
       this.socket.emit('chat_message', message);
     }
   }
 
-  onMessageReceived(callback) {
+  onMessageReceived(callback: (message: ChatMessage) => void): void {
     if (this.socket) {
       this.socket.on('message_received', callback);
     }
   }
 
-  onUserTyping(callback) {
+  onUserTyping(callback: (data: { userId: number }) => void): void {
     if (this.socket) {
       this.socket.on('user_typing', callback);
     }
   }
 
-  sendTyping(userId) {
+  sendTyping(userId: number): void {
     if (this.socket) {
       this.socket.emit('typing', { userId });
     }
   }
 
   // Creation collaboration
-  joinCreationRoom(creationId) {
+  joinCreationRoom(creationId: number): void {
     if (this.socket) {
       this.socket.emit('join_creation', { creationId });
     }
   }
 
-  leaveCreationRoom(creationId) {
+  leaveCreationRoom(creationId: number): void {
     if (this.socket) {
       this.socket.emit('leave_creation', { creationId });
     }
   }
 
-  onCreationUpdated(callback) {
+  onCreationUpdated(callback: (update: CreationUpdate) => void): void {
     if (this.socket) {
       this.socket.on('creation_updated', callback);
     }
   }
 
-  onCreationLinked(callback) {
+  onCreationLinked(callback: (data: any) => void): void {
     if (this.socket) {
       this.socket.on('creation_linked', callback);
     }
   }
 
-  sendCreationUpdate(creationId, update) {
+  sendCreationUpdate(creationId: number, update: Partial<CreationUpdate>): void {
     if (this.socket) {
       this.socket.emit('update_creation', { creationId, update });
     }
   }
 
   // Generation collaboration
-  onGenerationStarted(callback) {
+  onGenerationStarted(callback: (data: any) => void): void {
     if (this.socket) {
       this.socket.on('generation_started', callback);
     }
   }
 
-  onGenerationProgress(callback) {
+  onGenerationProgress(callback: (data: any) => void): void {
     if (this.socket) {
       this.socket.on('generation_progress', callback);
     }
   }
 
-  onGenerationCompleted(callback) {
+  onGenerationCompleted(callback: (data: any) => void): void {
     if (this.socket) {
       this.socket.on('generation_completed', callback);
     }
   }
 
   // Active users
-  onActiveUsersUpdate(callback) {
+  onActiveUsersUpdate(callback: (users: any[]) => void): void {
     if (this.socket) {
       this.socket.on('active_users_update', callback);
     }
   }
 
   // System notifications
-  onSystemNotification(callback) {
+  onSystemNotification(callback: (notification: any) => void): void {
     if (this.socket) {
       this.socket.on('system_notification', callback);
     }
   }
 
   // Remove all listeners
-  removeAllListeners() {
+  removeAllListeners(): void {
     if (this.socket) {
       this.socket.removeAllListeners();
     }
