@@ -4,11 +4,13 @@ import ChatInterface from './components/chat/ChatInterface';
 import AuthForm from './components/auth/AuthForm';
 import OAuthCallback from './components/auth/OAuthCallback';
 import CreationHistory from './components/creation/CreationHistory';
-import GlassDemo from './pages/GlassDemo';
+import { GlassPanel } from './components/ui/GlassPanel';
+import { backgroundGradients } from './styles/glass-theme';
 import { authService } from './services/auth';
 import type { User } from './types/auth';
 import type { Creation } from './types/api';
 import type { LoginHandler } from './types/components';
+import { LogOut, Cpu } from 'lucide-react';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -48,18 +50,28 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading AetherOS...</div>
+      <div className={`min-h-screen ${backgroundGradients.cosmic} flex items-center justify-center`}>
+        <GlassPanel className="p-8" gradient="dark">
+          <div className="flex items-center gap-3 text-white">
+            <Cpu className="w-6 h-6 animate-pulse" />
+            <div className="text-xl font-medium">Loading AetherOS...</div>
+          </div>
+        </GlassPanel>
       </div>
     );
   }
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className={`min-h-screen ${backgroundGradients.aurora}`}>
         {loading ? (
-          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-            <div className="text-xl text-gray-600">Loading AetherOS...</div>
+          <div className={`min-h-screen ${backgroundGradients.cosmic} flex items-center justify-center`}>
+            <GlassPanel className="p-8" gradient="dark">
+              <div className="flex items-center gap-3 text-white">
+                <Cpu className="w-6 h-6 animate-pulse" />
+                <div className="text-xl font-medium">Loading AetherOS...</div>
+              </div>
+            </GlassPanel>
           </div>
         ) : (
           <Routes>
@@ -72,28 +84,35 @@ const App: React.FC = () => {
               element={<OAuthCallback onLogin={handleLogin} />} 
             />
             <Route 
-              path="/demo" 
-              element={<GlassDemo />} 
-            />
-            <Route 
               path="/" 
               element={
                 user ? (
-                  <div className="flex h-screen">
-                    <div className="w-1/4 bg-white border-r border-gray-200 p-4">
-                      <div className="mb-4 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-800">AetherOS</h2>
-                        <button
-                          onClick={handleLogout}
-                          className="text-sm text-gray-600 hover:text-gray-800"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                      <CreationHistory creations={creations} setCreations={setCreations} />
+                  <div className="flex h-screen p-4 gap-4">
+                    {/* Sidebar */}
+                    <div className="w-1/4 min-w-80">
+                      <GlassPanel className="h-full p-4" gradient="default">
+                        <div className="mb-6 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Cpu className="w-6 h-6 text-white" />
+                            <h2 className="text-xl font-bold text-white">AetherOS</h2>
+                          </div>
+                          <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Logout
+                          </button>
+                        </div>
+                        <CreationHistory creations={creations} setCreations={setCreations} />
+                      </GlassPanel>
                     </div>
+                    
+                    {/* Main Content */}
                     <div className="flex-1">
-                      <ChatInterface user={user} creations={creations} setCreations={setCreations} />
+                      <GlassPanel className="h-full" gradient="default">
+                        <ChatInterface user={user} creations={creations} setCreations={setCreations} />
+                      </GlassPanel>
                     </div>
                   </div>
                 ) : (

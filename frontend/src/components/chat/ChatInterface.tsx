@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generationService } from '../../services/api';
+import { GlassPanel, GlassButton } from '../ui/GlassPanel';
 import type { ChatInterfaceProps, ChatMessage } from '../../types/components';
 import type { 
   Creation,
@@ -8,6 +9,7 @@ import type {
   UIGenerationResponse, 
   CLIGenerationResponse 
 } from '../../types/api';
+import { Code, Globe, Palette, Terminal, Sparkles, Send } from 'lucide-react';
 
 type GenerationType = 'code' | 'api' | 'ui' | 'cli';
 
@@ -222,76 +224,108 @@ What would you like to build today?`,
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      <div className="border-b border-gray-200 p-4 bg-white">
-        <h1 className="text-2xl font-bold text-gray-800">Generative Chat</h1>
-        <p className="text-gray-600">Describe what you want to create and I'll generate it for you</p>
-      </div>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <GlassPanel className="p-6 mb-4" variant="elevated" animate={false}>
+        <div className="flex items-center gap-3 mb-2">
+          <Sparkles className="w-6 h-6 text-white" />
+          <h1 className="text-2xl font-bold text-white">Generative Chat</h1>
+        </div>
+        <p className="text-white/80">Describe what you want to create and I'll generate it for you</p>
+      </GlassPanel>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-2 space-y-4">
         {messages.map(message => (
           <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-3/4 p-4 rounded-lg ${
-              message.sender === 'user' 
-                ? 'bg-liquid-blue text-white' 
-                : 'bg-gray-100 text-gray-800'
-            }`}>
-              {formatMessage(message)}
-              <div className="text-xs mt-2 opacity-70">
+            <GlassPanel 
+              className={`max-w-3/4 p-4 ${message.sender === 'user' ? 'ml-16' : 'mr-16'}`}
+              gradient={message.sender === 'user' ? 'neon' : 'default'}
+              animate={false}
+            >
+              <div className="text-white/95">
+                {formatMessage(message)}
+              </div>
+              <div className="text-xs mt-2 text-white/60">
                 {message.timestamp.toLocaleTimeString()}
               </div>
-            </div>
+            </GlassPanel>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-800 p-4 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <div className="animate-spin h-4 w-4 border-2 border-liquid-blue border-t-transparent rounded-full"></div>
+            <GlassPanel className="p-4 mr-16" animate={false}>
+              <div className="flex items-center space-x-3 text-white/90">
+                <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"></div>
                 <span>Generating your request...</span>
               </div>
-            </div>
+            </GlassPanel>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="border-t border-gray-200 p-4 bg-white">
-        <div className="flex items-center gap-2 mb-3">
-          <label className="text-sm font-medium text-gray-700">Generation Type:</label>
-          <select
-            value={generationType}
-            onChange={(e) => setGenerationType(e.target.value as GenerationType)}
-            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-liquid-blue"
-          >
-            <option value="code">🔧 Code</option>
-            <option value="api">🌐 API</option>
-            <option value="ui">🎨 UI Component</option>
-            <option value="cli">⚡ CLI Tool</option>
-          </select>
+      {/* Input Area */}
+      <GlassPanel className="p-4 mt-4" variant="elevated" animate={false}>
+        <div className="flex items-center gap-3 mb-4">
+          <label className="text-sm font-medium text-white/80">Generation Type:</label>
+          <div className="flex gap-2">
+            {[
+              { value: 'code', label: 'Code', icon: Code },
+              { value: 'api', label: 'API', icon: Globe },
+              { value: 'ui', label: 'UI', icon: Palette },
+              { value: 'cli', label: 'CLI', icon: Terminal }
+            ].map((type) => {
+              const Icon = type.icon;
+              return (
+                <button
+                  key={type.value}
+                  onClick={() => setGenerationType(type.value as GenerationType)}
+                  className={`
+                    flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+                    ${generationType === type.value 
+                      ? 'bg-white/20 text-white border border-white/30' 
+                      : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white/90'
+                    }
+                  `}
+                >
+                  <Icon className="w-4 h-4" />
+                  {type.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="flex space-x-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-liquid-blue focus:border-transparent"
-            placeholder={getPlaceholder(generationType)}
-            rows={3}
-            disabled={loading}
-          />
-          <button
+        
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full bg-white/10 border border-white/20 backdrop-blur-md text-white placeholder-white/50 rounded-lg p-3 resize-none focus:outline-none focus:bg-white/15 focus:border-white/30 transition-all duration-200"
+              placeholder={getPlaceholder(generationType)}
+              rows={3}
+              disabled={loading}
+            />
+          </div>
+          <GlassButton
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="bg-liquid-blue text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-liquid-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="primary"
+            className="px-6 self-end h-fit"
           >
-            Send
-          </button>
+            <div className="flex items-center gap-2">
+              <Send className="w-4 h-4" />
+              Send
+            </div>
+          </GlassButton>
         </div>
-        <div className="mt-2 text-xs text-gray-500">
+        
+        <div className="mt-2 text-xs text-white/60">
           {getExampleText(generationType)}
         </div>
-      </div>
+      </GlassPanel>
     </div>
   );
 };

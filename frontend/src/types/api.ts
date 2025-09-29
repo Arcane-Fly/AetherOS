@@ -116,6 +116,17 @@ export interface ImportExportOptions {
   creationIds?: number[];
 }
 
+export interface ImportResponse {
+  success: boolean;
+  summary: {
+    imported: number;
+    skipped: number;
+    errors: number;
+  };
+  message?: string;
+  error?: string;
+}
+
 // Link Types
 export interface LinkCreationsRequest {
   sourceId: number;

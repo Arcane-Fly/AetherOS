@@ -7,8 +7,9 @@ interface GlassPanelProps {
   children: React.ReactNode;
   className?: string;
   variant?: 'elevated' | 'floating' | 'subtle';
-  gradient?: GlassThemeName;
+  gradient?: GlassThemeName | 'danger';
   animate?: boolean;
+  onClick?: () => void;
 }
 
 export const GlassPanel: React.FC<GlassPanelProps> = ({
@@ -16,9 +17,19 @@ export const GlassPanel: React.FC<GlassPanelProps> = ({
   className = '',
   variant = 'floating',
   gradient = 'default',
-  animate = true
+  animate = true,
+  onClick
 }) => {
-  const baseClasses = variant ? glassVariants.panel[variant] : getGlassClasses(gradient);
+  let baseClasses: string;
+  
+  if (gradient === 'danger') {
+    baseClasses = 'bg-red-500/20 border border-red-400/30 backdrop-blur-md shadow-lg';
+  } else if (variant) {
+    baseClasses = glassVariants.panel[variant];
+  } else {
+    baseClasses = getGlassClasses(gradient);
+  }
+  
   const animationClasses = animate ? glassAnimations.fadeIn : '';
   
   const Component = animate ? motion.div : 'div';
@@ -30,7 +41,8 @@ export const GlassPanel: React.FC<GlassPanelProps> = ({
 
   return (
     <Component
-      className={`${baseClasses} ${animationClasses} ${className}`}
+      className={`${baseClasses} ${animationClasses} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
       {...motionProps}
     >
       {children}
@@ -99,6 +111,7 @@ interface GlassInputProps {
   disabled?: boolean;
   className?: string;
   icon?: React.ReactNode;
+  required?: boolean;
 }
 
 export const GlassInput: React.FC<GlassInputProps> = ({
@@ -108,7 +121,8 @@ export const GlassInput: React.FC<GlassInputProps> = ({
   type = 'text',
   disabled = false,
   className = '',
-  icon
+  icon,
+  required = false
 }) => {
   const baseClasses = glassVariants.input.default;
   
@@ -125,6 +139,7 @@ export const GlassInput: React.FC<GlassInputProps> = ({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        required={required}
         className={`
           ${baseClasses}
           w-full px-4 py-3 rounded-lg
