@@ -5,11 +5,14 @@ import AuthForm from './components/auth/AuthForm';
 import OAuthCallback from './components/auth/OAuthCallback';
 import CreationHistory from './components/creation/CreationHistory';
 import { authService } from './services/auth';
+import type { User } from './types/auth';
+import type { Creation } from './types/api';
+import type { LoginHandler } from './types/components';
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [creations, setCreations] = useState([]);
-  const [loading, setLoading] = useState(true);
+const App: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [creations, setCreations] = useState<Creation[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -20,7 +23,7 @@ function App() {
     }
   }, []);
 
-  const verifyToken = async (token) => {
+  const verifyToken = async (token: string): Promise<void> => {
     try {
       const userData = await authService.verifyToken(token);
       setUser(userData.user);
@@ -32,12 +35,12 @@ function App() {
     }
   };
 
-  const handleLogin = (userData) => {
+  const handleLogin: LoginHandler = (userData) => {
     setUser(userData.user);
     localStorage.setItem('token', userData.token);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     setUser(null);
     localStorage.removeItem('token');
   };
@@ -98,6 +101,6 @@ function App() {
       </div>
     </Router>
   );
-}
+};
 
 export default App;

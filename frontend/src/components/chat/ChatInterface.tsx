@@ -1,8 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generationService } from '../../services/api';
+import type { ChatInterfaceProps, ChatMessage } from '../../types/components';
+import type { 
+  Creation,
+  CodeGenerationResponse, 
+  APIGenerationResponse, 
+  UIGenerationResponse, 
+  CLIGenerationResponse 
+} from '../../types/api';
 
-const ChatInterface = ({ user, creations, setCreations }) => {
-  const [messages, setMessages] = useState([
+type GenerationType = 'code' | 'api' | 'ui' | 'cli';
+
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ user, creations, setCreations }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>([
     { 
       id: 1, 
       text: `Welcome to AetherOS, ${user.name}! I'm your AI assistant ready to help you create anything you need. 
@@ -18,12 +28,12 @@ What would you like to build today?`,
       timestamp: new Date()
     }
   ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [generationType, setGenerationType] = useState('code');
-  const messagesEndRef = useRef(null);
+  const [input, setInput] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [generationType, setGenerationType] = useState<GenerationType>('code');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -31,7 +41,7 @@ What would you like to build today?`,
     scrollToBottom();
   }, [messages]);
 
-  const getGenerationFunction = (type) => {
+  const getGenerationFunction = (type: GenerationType) => {
     const functions = {
       code: generationService.generateCode,
       api: generationService.generateAPI,
@@ -41,43 +51,47 @@ What would you like to build today?`,
     return functions[type] || generationService.generateCode;
   };
 
-  const formatGenerationResponse = (response, type, prompt) => {
+  const formatGenerationResponse = (
+    response: CodeGenerationResponse | APIGenerationResponse | UIGenerationResponse | CLIGenerationResponse, 
+    type: GenerationType, 
+    prompt: string
+  ) => {
     const formats = {
       code: {
-        text: `I've generated some ${response.language} code for you:`,
-        content: response.code,
-        language: response.language,
-        name: `Generated ${response.language} Code`
+        text: `I've generated some ${(response as CodeGenerationResponse).language} code for you:`,
+        content: (response as CodeGenerationResponse).code,
+        language: (response as CodeGenerationResponse).language,
+        name: `Generated ${(response as CodeGenerationResponse).language} Code`
       },
       api: {
         text: `I've created an API specification for you:`,
-        content: response.specification,
+        content: (response as APIGenerationResponse).specification,
         language: 'yaml',
         name: `Generated API Specification`,
-        metadata: response.metadata
+        metadata: (response as APIGenerationResponse).metadata
       },
       ui: {
         text: `I've created a React UI component for you:`,
-        content: response.component,
+        content: (response as UIGenerationResponse).component,
         language: 'jsx',
         name: `Generated UI Component`,
-        framework: response.framework
+        framework: (response as UIGenerationResponse).framework
       },
       cli: {
         text: `I've created a CLI tool for you:`,
-        content: response.code,
-        language: response.language,
+        content: (response as CLIGenerationResponse).code,
+        language: (response as CLIGenerationResponse).language,
         name: `Generated CLI Tool`,
-        executable: response.executable
+        executable: (response as CLIGenerationResponse).executable
       }
     };
     return formats[type] || formats.code;
   };
 
-  const handleSend = async () => {
+  const handleSend = async (): Promise<void> => {
     if (!input.trim() || loading) return;
 
-    const userMessage = { 
+    const userMessage: ChatMessage = { 
       id: Date.now(), 
       text: input, 
       sender: 'user',
@@ -95,7 +109,7 @@ What would you like to build today?`,
       if (response.success) {
         const format = formatGenerationResponse(response, generationType, input);
         
-        const systemMessage = { 
+        const systemMessage: ChatMessage = { 
           id: Date.now() + 1, 
           text: `${format.text}\n\n\`\`\`${format.language}\n${format.content}\n\`\`\`\n\nWould you like me to explain how it works or make any modifications?`, 
           sender: 'system',
@@ -103,32 +117,32 @@ What would you like to build today?`,
           generationType,
           content: format.content,
           language: format.language,
-          metadata: format.metadata,
-          framework: format.framework,
-          executable: format.executable
+          metadata: (format as any).metadata,
+          framework: (format as any).framework,
+          executable: (format as any).executable
         };
         setMessages(prev => [...prev, systemMessage]);
 
         // Create a new creation record
-        const newCreation = {
+        const newCreation: Partial<Creation> = {
           id: Date.now() + 2,
           name: format.name,
           description: input,
           type: generationType,
           content: format.content,
           language: format.language,
-          metadata: format.metadata,
-          framework: format.framework,
-          executable: format.executable,
+          metadata: (format as any).metadata,
+          framework: (format as any).framework,
+          executable: (format as any).executable,
           timestamp: new Date()
         };
-        setCreations(prev => [newCreation, ...prev]);
+        setCreations(prev => [newCreation as Creation, ...prev]);
       } else {
         throw new Error(response.error || 'Generation failed');
       }
     } catch (error) {
       console.error('Generation error:', error);
-      const errorMessage = { 
+      const errorMessage: ChatMessage = { 
         id: Date.now() + 1, 
         text: "I apologize, but I encountered an error while generating your request. Please try again or rephrase your request.", 
         sender: 'system',
@@ -140,14 +154,14 @@ What would you like to build today?`,
     }
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
-  const formatMessage = (message) => {
+  const formatMessage = (message: ChatMessage): React.ReactElement => {
     if (message.content && message.language) {
       const displayText = message.text.split('```')[0];
       const afterText = message.text.split('```')[2] || '';
@@ -177,7 +191,7 @@ What would you like to build today?`,
     return <div className="whitespace-pre-wrap">{message.text}</div>;
   };
 
-  const getTypeColor = (type) => {
+  const getTypeColor = (type: GenerationType): string => {
     const colors = {
       code: 'bg-blue-100 text-blue-800',
       api: 'bg-green-100 text-green-800',
@@ -187,7 +201,7 @@ What would you like to build today?`,
     return colors[type] || colors.code;
   };
 
-  const getPlaceholder = (type) => {
+  const getPlaceholder = (type: GenerationType): string => {
     const placeholders = {
       code: "Describe the code you want to generate... (Press Enter to send, Shift+Enter for new line)",
       api: "Describe the API you want to create... (Press Enter to send, Shift+Enter for new line)",
@@ -197,7 +211,7 @@ What would you like to build today?`,
     return placeholders[type] || placeholders.code;
   };
 
-  const getExampleText = (type) => {
+  const getExampleText = (type: GenerationType): string => {
     const examples = {
       code: 'Try: "Create a Python function to calculate fibonacci numbers"',
       api: 'Try: "Build a REST API for user management with CRUD operations"',
@@ -247,7 +261,7 @@ What would you like to build today?`,
           <label className="text-sm font-medium text-gray-700">Generation Type:</label>
           <select
             value={generationType}
-            onChange={(e) => setGenerationType(e.target.value)}
+            onChange={(e) => setGenerationType(e.target.value as GenerationType)}
             className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-liquid-blue"
           >
             <option value="code">🔧 Code</option>
@@ -263,7 +277,7 @@ What would you like to build today?`,
             onKeyPress={handleKeyPress}
             className="flex-1 border border-gray-300 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-liquid-blue focus:border-transparent"
             placeholder={getPlaceholder(generationType)}
-            rows="3"
+            rows={3}
             disabled={loading}
           />
           <button

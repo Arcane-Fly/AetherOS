@@ -2,21 +2,23 @@ import React, { useState, useEffect } from 'react';
 import CreationLinker from './CreationLinker';
 import TemplateBrowser from './TemplateBrowser';
 import { creationService } from '../../services/api';
+import type { CreationHistoryProps } from '../../types/components';
+import type { Creation, VersionHistoryResponse } from '../../types/api';
 
-const CreationHistory = ({ creations, setCreations }) => {
-  const [selectedCreation, setSelectedCreation] = useState(null);
-  const [showLinker, setShowLinker] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState('DESC');
-  const [filteredCreations, setFilteredCreations] = useState(creations);
-  const [selectedForExport, setSelectedForExport] = useState([]);
-  const [showExportOptions, setShowExportOptions] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
-  const [showVersionHistory, setShowVersionHistory] = useState({});
-  const [versionHistories, setVersionHistories] = useState({});
-  const [showTemplateBrowser, setShowTemplateBrowser] = useState(false);
+const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreations }) => {
+  const [selectedCreation, setSelectedCreation] = useState<number | null>(null);
+  const [showLinker, setShowLinker] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [typeFilter, setTypeFilter] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('created_at');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [filteredCreations, setFilteredCreations] = useState<Creation[]>(creations);
+  const [selectedForExport, setSelectedForExport] = useState<number[]>([]);
+  const [showExportOptions, setShowExportOptions] = useState<boolean>(false);
+  const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
+  const [showVersionHistory, setShowVersionHistory] = useState<Record<number, boolean>>({});
+  const [versionHistories, setVersionHistories] = useState<Record<number, VersionHistoryResponse>>({});
+  const [showTemplateBrowser, setShowTemplateBrowser] = useState<boolean>(false);
 
   // Filter and sort creations based on current filters
   useEffect(() => {
@@ -67,16 +69,16 @@ const CreationHistory = ({ creations, setCreations }) => {
     setFilteredCreations(filtered);
   }, [creations, searchTerm, typeFilter, sortBy, sortOrder]);
 
-  const handleDeleteCreation = (id) => {
+  const handleDeleteCreation = (id: number): void => {
     setCreations(prev => prev.filter(creation => creation.id !== id));
   };
 
-  const copyToClipboard = (code) => {
+  const copyToClipboard = (code: string): void => {
     navigator.clipboard.writeText(code);
     // You could add a toast notification here
   };
 
-  const handleLink = (linkData) => {
+  const handleLink = (linkData: { sourceId: number; targetIds: number[]; linkType: string }): void => {
     console.log('Creations linked:', linkData);
     // Update creation with links information
     setCreations(prev => prev.map(creation => {
