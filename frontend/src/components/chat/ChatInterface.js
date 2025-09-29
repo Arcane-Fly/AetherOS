@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generationService } from '../../services/api';
-import GenerationTypeSelector from './GenerationTypeSelector';
-import CreationPreview from './CreationPreview';
 
 const ChatInterface = ({ user, creations, setCreations }) => {
   const [messages, setMessages] = useState([
@@ -23,7 +21,6 @@ What would you like to build today?`,
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [generationType, setGenerationType] = useState('code');
-  const [showTypeSelector, setShowTypeSelector] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {

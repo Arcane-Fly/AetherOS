@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { creationService } from '../../services/api';
 
 const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
@@ -9,11 +9,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
-  useEffect(() => {
-    loadTemplates();
-  }, [typeFilter, searchTerm]);
-
-  const loadTemplates = async () => {
+  const loadTemplates = useCallback(async () => {
     try {
       setLoading(true);
       const filters = {};
@@ -33,7 +29,11 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [typeFilter, searchTerm, selectedCategory]);
+
+  useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
 
   const handleCreateFromTemplate = async (template, customName = '') => {
     try {

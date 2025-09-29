@@ -144,3 +144,6 @@ postgres_data/
 redis_data/
 uploads/
 .env.production
+
+# Frontend build directory
+frontend/build/

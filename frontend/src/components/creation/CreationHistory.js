@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import CreationLinker from './CreationLinker';
-import CreationPreview from '../chat/CreationPreview';
 import TemplateBrowser from './TemplateBrowser';
 import { creationService } from '../../services/api';
 

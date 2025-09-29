@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { creationService } from '../../services/api';
 
 const CreationLinker = ({ creations, onLink, currentCreationId = null }) => {
