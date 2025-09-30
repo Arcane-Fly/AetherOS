@@ -66,12 +66,39 @@ fi
 
 echo "✅ No bash built-in commands found"
 
-# Check for explicit commands vs auto-generation
+# Check for explicit commands vs auto-generation and schema validation
 echo
-echo "⚙️  Checking for explicit vs auto-generated commands..."
+echo "⚙️  Checking for proper Railpack schema and explicit commands..."
 
 for file in $railpack_files; do
     echo "🔍 Analyzing $file..."
+    
+    # Check for invalid "services" schema in root railpack.json
+    if [[ "$file" == "./railpack.json" ]]; then
+        has_services=$(jq -r '.services // empty' "$file")
+        if [ -n "$has_services" ]; then
+            echo "❌ $file: Uses invalid 'services' schema - Railpack doesn't support this format"
+            echo "💡 Use proper Railpack schema with '\$schema', 'steps', and 'deploy' fields"
+            found_issues=true
+        fi
+        
+        # Check for proper schema
+        has_schema=$(jq -r '."$schema" // empty' "$file")
+        if [ -z "$has_schema" ]; then
+            echo "⚠️  $file: Missing \$schema field - add 'https://schema.railpack.com'"
+        else
+            echo "✅ $file: Has proper \$schema field"
+        fi
+        
+        # Check for steps and deploy structure
+        has_steps=$(jq -r '.steps // empty' "$file")
+        has_deploy=$(jq -r '.deploy // empty' "$file")
+        if [ -n "$has_steps" ] && [ -n "$has_deploy" ]; then
+            echo "✅ $file: Uses proper Railpack schema with steps and deploy"
+        elif [ -z "$has_services" ]; then
+            echo "⚠️  $file: May be missing steps or deploy configuration"
+        fi
+    fi
     
     # Check if services have explicit installCommand and buildCommand (where needed)
     services=$(jq -r '.services // {} | keys[]' "$file" 2>/dev/null || echo "")
@@ -96,6 +123,12 @@ for file in $railpack_files; do
         done
     fi
 done
+
+if [ "$found_issues" = true ]; then
+    echo
+    echo "❌ Critical schema issues found! Please fix before deploying to Railway."
+    exit 1
+fi
 
 echo
 echo "🎉 Railpack validation complete!"

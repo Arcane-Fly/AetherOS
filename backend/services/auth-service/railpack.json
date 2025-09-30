@@ -1,4 +1,5 @@
 {
+  "$schema": "https://schema.railpack.com",
   "version": "1",
   "metadata": {
     "name": "aetheros-auth-service"
@@ -7,7 +8,7 @@
     "provider": "node",
     "steps": {
       "install": {
-        "commands": ["yarn install --frozen-lockfile"]
+        "commands": ["yarn install --immutable"]
       }
     }
   },

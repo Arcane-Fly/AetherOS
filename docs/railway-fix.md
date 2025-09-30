@@ -9,96 +9,117 @@ ERROR: failed to build: process "sh -c enable corepack && yarn install && yarn b
 did not complete successfully: exit code: 127
 ```
 
+# Railway Railpack Configuration Fix
+
+## Issue Summary
+
+Railway deployment was failing with the error:
+```
+sh: 1: enable: not found
+ERROR: failed to build: process "sh -c enable corepack && yarn install && yarn build" 
+did not complete successfully: exit code: 127
+```
+
 ## Root Cause
 
-1. **Auto-generation Problem**: The main `railpack.json` only specified `"provider": "node"` without explicit install/build commands
-2. **Shell Environment**: Railway executes commands in `/bin/sh` (dash), not `/bin/bash`
-3. **Invalid Command**: Railpack auto-generated `enable corepack` command, but `enable` is a bash built-in unavailable in sh
-4. **Redundancy**: Corepack was already enabled during the install phase
+1. **Invalid Schema Problem**: The main `railpack.json` used an undocumented "services" schema that Railpack doesn't recognize
+2. **Auto-generation Fallback**: When Railpack couldn't parse the invalid schema, it fell back to auto-detection
+3. **Shell Environment**: Railway executes commands in `/bin/sh` (dash), not `/bin/bash`  
+4. **Invalid Command**: Railpack auto-generated `enable corepack` command, but `enable` is a bash built-in unavailable in sh
+5. **Silent Failure**: Railpack silently ignored the invalid configuration file and used auto-detection instead
 
 ## Solution Implemented
 
-### 1. Explicit Railpack Commands
+### 1. Fixed Invalid Railpack Schema
 
-Updated `/railpack.json` with explicit commands:
-
+**BEFORE (Invalid "services" schema):**
 ```json
 {
+  "version": "1",
   "services": {
     "frontend": {
       "build": {
         "provider": "node",
         "installCommand": "yarn install --immutable",
         "buildCommand": "yarn build"
-      },
-      "start": {
-        "command": "yarn start"
-      }
-    },
-    "auth-service": {
-      "build": {
-        "provider": "node",
-        "installCommand": "yarn install --immutable"
-      },
-      "start": {
-        "command": "yarn start"
       }
     }
   }
 }
 ```
 
-### 2. Yarn Version Consistency
-
-- Updated all services to use `"packageManager": "yarn@4.9.2"`
-- Regenerated lockfiles with Yarn 4.9.2
-- Used `--immutable` flag (modern replacement for `--frozen-lockfile`)
-
-### 3. Workspace Configuration
-
-Updated root `package.json`:
-
+**AFTER (Proper Railpack schema):**
 ```json
 {
-  "private": true,
-  "workspaces": [
-    "frontend",
-    "backend/services/*"
-  ],
-  "scripts": {
-    "install:all": "yarn install",
-    "lint": "yarn workspaces foreach --parallel run lint",
-    "test": "yarn workspaces foreach --parallel run test",
-    "build": "yarn workspace aetheros-frontend run build"
+  "$schema": "https://schema.railpack.com",
+  "provider": "node",
+  "packages": {
+    "node": "20.19.5"
+  },
+  "steps": {
+    "install": {
+      "commands": ["yarn install --immutable"],
+      "caches": ["yarn-cache"]
+    },
+    "build": {
+      "inputs": [{ "step": "install" }],
+      "commands": ["yarn workspace aetheros-frontend build"]
+    }
+  },
+  "deploy": {
+    "startCommand": "yarn workspace aetheros-frontend start",
+    "inputs": [{ "step": "build", "include": ["."] }]
   }
 }
 ```
 
-### 4. Validation Infrastructure
+### 2. Updated Service-Specific Configurations
 
-Created `scripts/validate-railpack.sh` to:
-- Check JSON syntax
-- Detect bash built-in commands
-- Validate explicit command configuration
-- Prevent future auto-generation issues
+Updated all service-specific `railpack.json` files to use:
+- Proper `$schema` field pointing to `https://schema.railpack.com` 
+- Updated `--frozen-lockfile` to `--immutable` (Yarn 4.x compatibility)
 
-## Commands
+**Service files updated:**
+- `frontend/railpack.json`
+- `backend/services/auth-service/railpack.json`
+- `backend/services/generation-service/railpack.json` 
+- `backend/services/websocket-service/railpack.json`
 
-### Frontend (React Build Required)
-- **Install**: `yarn install --immutable`
-- **Build**: `yarn build`
-- **Start**: `yarn start`
+### 3. Enhanced Validation Infrastructure
 
-### Backend Services (Node.js - No Build Step)
-- **Install**: `yarn install --immutable`
-- **Start**: `yarn start`
+Updated `scripts/validate-railpack.sh` to:
+- Check JSON syntax validation
+- Detect bash built-in commands that fail in sh environment
+- **NEW:** Validate proper Railpack schema usage and detect invalid "services" format
+- Ensure explicit commands prevent auto-generation issues
+- **NEW:** Validate proper Railpack schema usage and detect invalid "services" format
+- Ensure explicit commands prevent auto-generation issues
+
+## Key Changes Summary
+
+### ✅ Fixed: Invalid Schema
+- **Before:** Used undocumented "services" schema that Railpack ignored
+- **After:** Proper Railpack schema with `$schema`, `steps`, and `deploy` fields
+
+### ✅ Fixed: Auto-Generation 
+- **Before:** Railpack fell back to auto-detection, generating `enable corepack`
+- **After:** Explicit commands prevent any auto-generation
+
+### ✅ Fixed: Shell Compatibility
+- **Before:** `enable` is bash built-in, fails in Railway's `/bin/sh`
+- **After:** Only POSIX-compatible commands used
+
+### ✅ Enhanced: Validation
+- Added schema validation to prevent future invalid configurations
+- Enhanced bash built-in detection
+- Yarn 4.x compatibility (`--immutable` vs `--frozen-lockfile`)
 
 ## Prevention
 
-1. **Validation Script**: Run `yarn validate:railpack-advanced` before deployment
-2. **Explicit Commands**: Always define `installCommand` and `buildCommand` in railpack.json
+1. **Schema Validation**: Run `yarn validate:railpack-advanced` before deployment
+2. **Proper Format**: Always use Railpack's official schema with `$schema` field
 3. **Shell Compatibility**: Test commands work in `/bin/sh`, not just bash
-4. **CI Integration**: Add railpack validation to CI pipeline
+4. **CI Integration**: Validation script catches issues before deployment
 
 ## Testing
 

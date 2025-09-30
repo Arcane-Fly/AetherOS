@@ -148,3 +148,6 @@ uploads/
 
 # Frontend build directory
 frontend/build/
+
+# Railway backup files
+railpack.json.invalid.bak
