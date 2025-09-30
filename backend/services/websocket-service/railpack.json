@@ -6,7 +6,7 @@
   },
   "steps": {
     "install": {
-      "commands": ["yarn install --immutable"],
+      "commands": ["corepack enable", "yarn install --immutable"],
       "caches": ["yarn-cache"]
     }
   },
