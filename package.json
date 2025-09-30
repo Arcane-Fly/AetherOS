@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev:local": "docker compose up --build",
-    "start:local": "docker compose up", 
+    "start:local": "docker compose up",
     "stop:local": "docker compose down",
     "migrate": "node scripts/migrate.js",
     "setup": "./scripts/setup.sh",
