@@ -7,25 +7,42 @@
     "frontend": {
       "root": "./frontend",
       "build": {
-        "provider": "node"
+        "provider": "node",
+        "installCommand": "yarn install --immutable",
+        "buildCommand": "yarn build"
+      },
+      "start": {
+        "command": "yarn start"
       }
     },
     "auth-service": {
       "root": "./backend/services/auth-service",
       "build": {
-        "provider": "node"
+        "provider": "node",
+        "installCommand": "yarn install --immutable"
+      },
+      "start": {
+        "command": "yarn start"
       }
     },
     "generation-service": {
       "root": "./backend/services/generation-service", 
       "build": {
-        "provider": "node"
+        "provider": "node",
+        "installCommand": "yarn install --immutable"
+      },
+      "start": {
+        "command": "yarn start"
       }
     },
     "websocket-service": {
       "root": "./backend/services/websocket-service",
       "build": {
-        "provider": "node"
+        "provider": "node",
+        "installCommand": "yarn install --immutable"
+      },
+      "start": {
+        "command": "yarn start"
       }
     }
   }

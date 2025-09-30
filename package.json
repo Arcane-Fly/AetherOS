@@ -1,20 +1,25 @@
 {
   "name": "aether-os",
   "version": "1.0.0",
+  "private": true,
   "description": "AetherOS - Dynamic Generative Operating Environment",
-  "main": "index.js",
+  "workspaces": [
+    "frontend",
+    "backend/services/*"
+  ],
   "scripts": {
     "dev:local": "docker compose up --build",
     "start:local": "docker compose up",
     "stop:local": "docker compose down",
     "migrate": "node scripts/migrate.js",
     "setup": "./scripts/setup.sh",
-    "install:all": "yarn install && cd frontend && yarn install && cd ../backend/services/auth-service && yarn install && cd ../generation-service && yarn install && cd ../websocket-service && yarn install",
-    "lint": "cd frontend && yarn lint && cd ../backend/services/auth-service && yarn lint && cd ../generation-service && yarn lint && cd ../websocket-service && yarn lint",
-    "test": "cd frontend && yarn test && cd ../backend/services/auth-service && yarn test && cd ../generation-service && yarn test && cd ../websocket-service && yarn test",
-    "build": "cd frontend && yarn build",
+    "install:all": "yarn install",
+    "lint": "yarn workspaces foreach --parallel run lint",
+    "test": "yarn workspaces foreach --parallel run test",
+    "build": "yarn workspace aetheros-frontend run build",
     "deploy:railway": "railway up --force",
-    "validate:railpack": "find . -name 'railpack.json' -exec jq '.' {} \\;"
+    "validate:railpack": "find . -name 'railpack.json' -exec jq '.' {} \\;",
+    "validate:railpack-advanced": "./scripts/validate-railpack.sh"
   },
   "keywords": [
     "generative",
