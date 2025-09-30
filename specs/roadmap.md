@@ -99,6 +99,9 @@ This roadmap tracks the development progress of AetherOS against the Product Req
 - ✅ Service health check endpoints
 - ✅ Proper PORT binding for Railway (0.0.0.0)
 - ✅ Yarn 4.x compatibility for modern package management
+- ✅ **NEW**: Railway deployment standards enforcement (modern railpack.json schema)
+- ✅ **NEW**: Theme loading optimization (pre-React initialization to prevent FOUC)
+- ✅ **NEW**: Updated yarn.lock to yarn@4.9.2+ with latest dependencies
 - ❌ Railway CLI integration and testing
 - ❌ Automated CI/CD pipeline
 
