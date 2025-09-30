@@ -1,49 +1,33 @@
 {
-  "version": "1",
-  "metadata": {
-    "name": "aether-os"
+  "$schema": "https://schema.railpack.com",
+  "provider": "node",
+  "packages": {
+    "node": "20.19.5"
   },
-  "services": {
-    "frontend": {
-      "root": "./frontend",
-      "build": {
-        "provider": "node",
-        "installCommand": "yarn install --immutable",
-        "buildCommand": "yarn build"
-      },
-      "start": {
-        "command": "yarn start"
-      }
+  "steps": {
+    "install": {
+      "commands": [
+        "yarn install --immutable"
+      ],
+      "caches": ["yarn-cache"]
     },
-    "auth-service": {
-      "root": "./backend/services/auth-service",
-      "build": {
-        "provider": "node",
-        "installCommand": "yarn install --immutable"
-      },
-      "start": {
-        "command": "yarn start"
-      }
-    },
-    "generation-service": {
-      "root": "./backend/services/generation-service", 
-      "build": {
-        "provider": "node",
-        "installCommand": "yarn install --immutable"
-      },
-      "start": {
-        "command": "yarn start"
-      }
-    },
-    "websocket-service": {
-      "root": "./backend/services/websocket-service",
-      "build": {
-        "provider": "node",
-        "installCommand": "yarn install --immutable"
-      },
-      "start": {
-        "command": "yarn start"
-      }
+    "build": {
+      "inputs": [{ "step": "install" }],
+      "commands": [
+        "yarn workspace aetheros-frontend build"
+      ]
+    }
+  },
+  "deploy": {
+    "startCommand": "yarn workspace aetheros-frontend start",
+    "inputs": [
+      { "step": "build", "include": ["."] }
+    ]
+  },
+  "caches": {
+    "yarn-cache": {
+      "directory": "/root/.yarn/cache",
+      "type": "shared"
     }
   }
 }
