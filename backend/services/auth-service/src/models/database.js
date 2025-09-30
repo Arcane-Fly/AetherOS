@@ -5,6 +5,9 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+// Import memory graph functionality
+const { createMemoryGraphTables } = require('./memory-graph');
+
 const connectDB = async () => {
   try {
     const client = await pool.connect();
@@ -88,6 +91,9 @@ const createTables = async () => {
     
     // Add version control columns to existing tables if they don't exist
     await addVersionControlColumns();
+    
+    // Create memory graph tables
+    await createMemoryGraphTables();
     
     await pool.query(createIndexes);
     console.log('Database tables created successfully');
