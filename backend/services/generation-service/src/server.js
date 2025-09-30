@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const expressWinston = require('express-winston');
 const generationRoutes = require('./routes/generation');
+const memoryGraphRoutes = require('./routes/memory-graph');
 const logger = require('./config/logger');
 
 const app = express();
@@ -74,6 +75,7 @@ const generalLimiter = rateLimit({
 
 // Apply rate limiting
 app.use('/api/generate', generationLimiter);
+app.use('/api/memory-graph', generationLimiter); // Apply same limits to memory graph endpoints
 app.use(generalLimiter);
 
 // Body parsing middleware
@@ -82,6 +84,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/generate', generationRoutes);
+app.use('/api/memory-graph', memoryGraphRoutes);
 
 // Enhanced health check
 app.get('/health', (req, res) => {
@@ -89,6 +92,7 @@ app.get('/health', (req, res) => {
     status: 'ok', 
     service: 'generation-service',
     version: '1.0.0',
+    features: ['code-generation', 'memory-graph', 'multi-agent-reasoning'],
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     openai_configured: !!process.env.OPENAI_API_KEY
