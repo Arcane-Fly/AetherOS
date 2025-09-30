@@ -20,6 +20,7 @@
     "test:memory-graph": "node scripts/test-memory-graph.js",
     "validate:memory-graph": "node scripts/validate-memory-graph.js",
     "example:memory-graph": "node scripts/memory-graph-example.js",
+    "demo:memory-graph": "node scripts/demo-memory-graph-structure.js",
     "build": "yarn workspace aetheros-frontend run build",
     "deploy:railway": "railway up --force",
     "validate:railpack": "find . -name 'railpack.json' -exec jq '.' {} \\;",
