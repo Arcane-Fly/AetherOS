@@ -15,7 +15,7 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.WEBSOCKET_SERVICE_PORT || 3003;
+const PORT = process.env.PORT || process.env.WEBSOCKET_SERVICE_PORT || 3003;
 
 // Security middleware
 app.use(helmet());
@@ -330,7 +330,7 @@ const startServer = async () => {
   try {
     await initRedis();
     
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`WebSocket service running on port ${PORT}`);
       console.log(`Health check available at http://localhost:${PORT}/health`);
     });

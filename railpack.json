@@ -1,0 +1,32 @@
+{
+  "version": "1",
+  "metadata": {
+    "name": "aether-os"
+  },
+  "services": {
+    "frontend": {
+      "root": "./frontend",
+      "build": {
+        "provider": "node"
+      }
+    },
+    "auth-service": {
+      "root": "./backend/services/auth-service",
+      "build": {
+        "provider": "node"
+      }
+    },
+    "generation-service": {
+      "root": "./backend/services/generation-service", 
+      "build": {
+        "provider": "node"
+      }
+    },
+    "websocket-service": {
+      "root": "./backend/services/websocket-service",
+      "build": {
+        "provider": "node"
+      }
+    }
+  }
+}

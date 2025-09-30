@@ -8,7 +8,7 @@ const generationRoutes = require('./routes/generation');
 const logger = require('./config/logger');
 
 const app = express();
-const PORT = process.env.GENERATION_SERVICE_PORT || 3002;
+const PORT = process.env.PORT || process.env.GENERATION_SERVICE_PORT || 3002;
 
 // Create logs directory
 const fs = require('fs');
@@ -115,7 +115,7 @@ app.use('*', (req, res) => {
 // Start server
 const startServer = () => {
   try {
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       logger.info(`Generation service started successfully`, { port: PORT, env: process.env.NODE_ENV });
     });
   } catch (error) {

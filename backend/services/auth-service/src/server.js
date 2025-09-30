@@ -12,7 +12,7 @@ const logger = require('./config/logger');
 const passport = require('./config/passport');
 
 const app = express();
-const PORT = process.env.AUTH_SERVICE_PORT || 3001;
+const PORT = process.env.PORT || process.env.AUTH_SERVICE_PORT || 3001;
 
 // Create logs directory
 const fs = require('fs');
@@ -133,7 +133,7 @@ app.use('*', (req, res) => {
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       logger.info(`Auth service started successfully`, { port: PORT, env: process.env.NODE_ENV });
     });
   } catch (error) {
