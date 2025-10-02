@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetheros.dev/contracts/github/searchIssues.response.json",
+  "title": "github.searchIssues.response",
+  "description": "Response schema for GitHub issue search",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["totalCount", "items"],
+  "properties": {
+    "totalCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of matching issues"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "number", "title", "state"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Issue ID"
+          },
+          "number": {
+            "type": "integer",
+            "description": "Issue number"
+          },
+          "title": {
+            "type": "string",
+            "description": "Issue title"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["open", "closed"],
+            "description": "Issue state"
+          },
+          "body": {
+            "type": "string",
+            "description": "Issue description"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Issue labels"
+          },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Assigned users"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Issue creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "description": "Array of matching issues"
+    },
+    "incompleteResults": {
+      "type": "boolean",
+      "description": "Whether search results are incomplete due to timeout"
+    }
+  }
+}

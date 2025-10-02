@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetheros.dev/contracts/supabase/sql.request.json",
+  "title": "supabase.sql.request",
+  "description": "Request schema for executing SQL queries in Supabase",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query"],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "description": "SQL query to execute"
+    },
+    "params": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "number" },
+          { "type": "boolean" },
+          { "type": "null" }
+        ]
+      },
+      "description": "Parameterized query values for SQL injection prevention"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "default": 30000,
+      "description": "Query timeout in milliseconds"
+    },
+    "readOnly": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a read-only query (enforced by RLS)"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetheros.dev/contracts/pinecone/query.response.json",
+  "title": "pinecone.query.response",
+  "description": "Response schema for Pinecone query operation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["matches"],
+  "properties": {
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "score"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Vector identifier"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Similarity score"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Vector values (if requested)"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Vector metadata (if requested)"
+          }
+        }
+      },
+      "description": "Array of matching vectors sorted by similarity"
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Namespace that was queried"
+    }
+  }
+}

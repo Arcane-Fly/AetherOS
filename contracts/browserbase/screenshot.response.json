@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetheros.dev/contracts/browserbase/screenshot.response.json",
+  "title": "browserbase.screenshot.response",
+  "description": "Response schema for browser screenshot operations",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["data", "format"],
+  "properties": {
+    "data": {
+      "type": "string",
+      "format": "byte",
+      "description": "Base64-encoded screenshot data"
+    },
+    "format": {
+      "type": "string",
+      "enum": ["png", "jpeg", "webp"],
+      "description": "Image format"
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Image width in pixels"
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Image height in pixels"
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Image size in bytes"
+    }
+  }
+}

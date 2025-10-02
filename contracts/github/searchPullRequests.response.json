@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetheros.dev/contracts/github/searchPullRequests.response.json",
+  "title": "github.searchPullRequests.response",
+  "description": "Response schema for GitHub pull request search",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["totalCount", "items"],
+  "properties": {
+    "totalCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of matching pull requests"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "number", "title", "state"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Pull request ID"
+          },
+          "number": {
+            "type": "integer",
+            "description": "Pull request number"
+          },
+          "title": {
+            "type": "string",
+            "description": "Pull request title"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["open", "closed"],
+            "description": "Pull request state"
+          },
+          "draft": {
+            "type": "boolean",
+            "description": "Whether PR is a draft"
+          },
+          "body": {
+            "type": "string",
+            "description": "Pull request description"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Pull request labels"
+          },
+          "baseBranch": {
+            "type": "string",
+            "description": "Target branch"
+          },
+          "headBranch": {
+            "type": "string",
+            "description": "Source branch"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Pull request creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "description": "Array of matching pull requests"
+    },
+    "incompleteResults": {
+      "type": "boolean",
+      "description": "Whether search results are incomplete due to timeout"
+    }
+  }
+}
