@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetheros.dev/contracts/pinecone/query.request.json",
+  "title": "pinecone.query.request",
+  "description": "Request schema for querying vectors from Pinecone",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["namespace", "vector"],
+  "properties": {
+    "namespace": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The namespace to query vectors from"
+    },
+    "vector": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 1,
+      "description": "Query vector for similarity search"
+    },
+    "topK": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000,
+      "default": 10,
+      "description": "Number of most similar vectors to return"
+    },
+    "filter": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Metadata filter for query results"
+    },
+    "includeMetadata": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to include metadata in results"
+    },
+    "includeValues": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to include vector values in results"
+    }
+  }
+}

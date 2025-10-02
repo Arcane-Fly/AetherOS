@@ -1,0 +1,9 @@
+{
+  "url": "https://example.com",
+  "waitUntil": "networkidle0",
+  "timeout": 60000,
+  "viewport": {
+    "width": 1920,
+    "height": 1080
+  }
+}

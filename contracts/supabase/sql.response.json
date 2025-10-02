@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetheros.dev/contracts/supabase/sql.response.json",
+  "title": "supabase.sql.response",
+  "description": "Response schema for Supabase SQL execution",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rows"],
+  "properties": {
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "description": "Result rows from query execution"
+    },
+    "rowCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of rows affected/returned"
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dataType": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Field metadata for result columns"
+    },
+    "executionTime": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Query execution time in milliseconds"
+    }
+  }
+}
