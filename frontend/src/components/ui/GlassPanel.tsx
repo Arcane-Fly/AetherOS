@@ -1,6 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { getGlassClasses, glassVariants, glassAnimations, type GlassThemeName } from '../../styles/glass-theme';
+import {
+  getGlassClasses,
+  glassVariants,
+  glassAnimations,
+  type GlassThemeName,
+} from '../../styles/glass-theme';
 
 // Glass Panel Component
 interface GlassPanelProps {
@@ -18,10 +23,10 @@ export const GlassPanel: React.FC<GlassPanelProps> = ({
   variant = 'floating',
   gradient = 'default',
   animate = true,
-  onClick
+  onClick,
 }) => {
   let baseClasses: string;
-  
+
   if (gradient === 'danger') {
     baseClasses = 'bg-red-500/20 border border-red-400/30 backdrop-blur-md shadow-lg';
   } else if (variant) {
@@ -29,15 +34,17 @@ export const GlassPanel: React.FC<GlassPanelProps> = ({
   } else {
     baseClasses = getGlassClasses(gradient);
   }
-  
+
   const animationClasses = animate ? glassAnimations.fadeIn : '';
-  
+
   const Component = animate ? motion.div : 'div';
-  const motionProps = animate ? {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.3 }
-  } : {};
+  const motionProps = animate
+    ? {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.3 },
+      }
+    : {};
 
   return (
     <Component
@@ -50,7 +57,7 @@ export const GlassPanel: React.FC<GlassPanelProps> = ({
   );
 };
 
-// Glass Button Component  
+// Glass Button Component
 interface GlassButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
@@ -68,11 +75,11 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   disabled = false,
   loading = false,
   className = '',
-  type = 'button'
+  type = 'button',
 }) => {
   const baseClasses = glassVariants.button[variant];
   const disabledClasses = disabled || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
-  
+
   return (
     <motion.button
       type={type}
@@ -122,10 +129,10 @@ export const GlassInput: React.FC<GlassInputProps> = ({
   disabled = false,
   className = '',
   icon,
-  required = false
+  required = false,
 }) => {
   const baseClasses = glassVariants.input.default;
-  
+
   return (
     <div className={`relative ${className}`}>
       {icon && (
@@ -167,7 +174,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   title,
   subtitle,
   className = '',
-  gradient = 'default'
+  gradient = 'default',
 }) => {
   return (
     <motion.div
@@ -179,12 +186,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     >
       {(title || subtitle) && (
         <div className="mb-4">
-          {title && (
-            <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>
-          )}
-          {subtitle && (
-            <p className="text-white/70 text-sm">{subtitle}</p>
-          )}
+          {title && <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>}
+          {subtitle && <p className="text-white/70 text-sm">{subtitle}</p>}
         </div>
       )}
       {children}
@@ -206,7 +209,7 @@ export const GlassModal: React.FC<GlassModalProps> = ({
   onClose,
   children,
   title,
-  className = ''
+  className = '',
 }) => {
   if (!isOpen) return null;
 
@@ -218,11 +221,8 @@ export const GlassModal: React.FC<GlassModalProps> = ({
       exit={{ opacity: 0 }}
     >
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
       {/* Modal Content */}
       <motion.div
         className={`relative ${getGlassClasses('default')} max-w-lg w-full max-h-[80vh] overflow-auto ${className}`}
@@ -233,19 +233,19 @@ export const GlassModal: React.FC<GlassModalProps> = ({
         {title && (
           <div className="flex items-center justify-between p-6 border-b border-white/20">
             <h2 className="text-xl font-semibold text-white">{title}</h2>
-            <button
-              onClick={onClose}
-              className="text-white/60 hover:text-white transition-colors"
-            >
+            <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
         )}
-        <div className="p-6">
-          {children}
-        </div>
+        <div className="p-6">{children}</div>
       </motion.div>
     </motion.div>
   );
@@ -261,14 +261,12 @@ interface GlassNavbarProps {
 export const GlassNavbar: React.FC<GlassNavbarProps> = ({
   children,
   className = '',
-  gradient = 'default'
+  gradient = 'default',
 }) => {
   return (
     <nav className={`${getGlassClasses(gradient)} fixed top-0 left-0 right-0 z-40 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {children}
-        </div>
+        <div className="flex items-center justify-between h-16">{children}</div>
       </div>
     </nav>
   );
@@ -290,7 +288,7 @@ export const GlassSidebar: React.FC<GlassSidebarProps> = ({
   onClose,
   side = 'left',
   className = '',
-  gradient = 'default'
+  gradient = 'default',
 }) => {
   return (
     <>
@@ -304,7 +302,7 @@ export const GlassSidebar: React.FC<GlassSidebarProps> = ({
           onClick={onClose}
         />
       )}
-      
+
       {/* Sidebar */}
       <motion.div
         className={`
@@ -312,7 +310,7 @@ export const GlassSidebar: React.FC<GlassSidebarProps> = ({
           ${getGlassClasses(gradient)} ${className}
         `}
         initial={{ x: side === 'left' ? -320 : 320 }}
-        animate={{ x: isOpen ? 0 : (side === 'left' ? -320 : 320) }}
+        animate={{ x: isOpen ? 0 : side === 'left' ? -320 : 320 }}
         transition={{ type: 'spring', damping: 25, stiffness: 120 }}
       >
         {children}

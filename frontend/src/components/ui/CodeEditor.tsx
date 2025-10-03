@@ -23,13 +23,13 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
   width = '100%',
   options = {},
   className = '',
-  loading
+  loading,
 }) => {
   const editorRef = useRef<any>(null);
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
-    
+
     // Configure Monaco for better TypeScript experience
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ES2020,
@@ -41,7 +41,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
       jsx: monaco.languages.typescript.JsxEmit.React,
       reactNamespace: 'React',
       allowJs: true,
-      typeRoots: ['node_modules/@types']
+      typeRoots: ['node_modules/@types'],
     });
 
     // Add React types
@@ -68,7 +68,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
         'editor.lineHighlightBackground': '#FFFFFF0A',
         'editor.selectionBackground': '#264F78',
         'editor.inactiveSelectionBackground': '#3A3D41',
-      }
+      },
     });
 
     // Set the custom theme
@@ -96,7 +96,7 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
     quickSuggestions: {
       other: true,
       comments: false,
-      strings: false
+      strings: false,
     },
     parameterHints: { enabled: true },
     autoClosingBrackets: 'always',
@@ -107,11 +107,11 @@ export const MonacoEditor: React.FC<MonacoEditorProps> = ({
     cursorSmoothCaretAnimation: true,
     renderWhitespace: 'selection',
     renderControlCharacters: false,
-    ...options
+    ...options,
   };
 
   const loadingComponent = loading || (
-    <motion.div 
+    <motion.div
       className="flex items-center justify-center h-full bg-black/20 rounded-lg backdrop-blur-sm"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -171,16 +171,17 @@ export const GlassCodeEditor: React.FC<GlassCodeEditorProps> = ({
           {title && (
             <h3 className="text-white font-semibold flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                />
               </svg>
               {title}
             </h3>
           )}
-          {actions && (
-            <div className="flex items-center gap-2">
-              {actions}
-            </div>
-          )}
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
         </div>
       )}
 
@@ -190,11 +191,7 @@ export const GlassCodeEditor: React.FC<GlassCodeEditorProps> = ({
       </div>
 
       {/* Footer */}
-      {footer && (
-        <div className="p-4 border-t border-white/20 bg-white/5">
-          {footer}
-        </div>
-      )}
+      {footer && <div className="p-4 border-t border-white/20 bg-white/5">{footer}</div>}
     </motion.div>
   );
 };
@@ -209,7 +206,7 @@ interface LanguageSelectorProps {
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   value,
   onChange,
-  className = ''
+  className = '',
 }) => {
   const languages = [
     { value: 'typescript', label: 'TypeScript', icon: '🟦' },
@@ -223,7 +220,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     { value: 'css', label: 'CSS', icon: '🎨' },
     { value: 'json', label: 'JSON', icon: '📋' },
     { value: 'yaml', label: 'YAML', icon: '📄' },
-    { value: 'markdown', label: 'Markdown', icon: '📝' }
+    { value: 'markdown', label: 'Markdown', icon: '📝' },
   ];
 
   return (
@@ -238,11 +235,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       `}
     >
       {languages.map((lang) => (
-        <option 
-          key={lang.value} 
-          value={lang.value}
-          className="bg-gray-800 text-white"
-        >
+        <option key={lang.value} value={lang.value} className="bg-gray-800 text-white">
           {lang.icon} {lang.label}
         </option>
       ))}

@@ -18,7 +18,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
 
       const response = await creationService.getTemplates(filters);
       setTemplates(response.categories || {});
-      
+
       // Set default category if none selected
       if (!selectedCategory && Object.keys(response.categories).length > 0) {
         setSelectedCategory(Object.keys(response.categories)[0]);
@@ -43,7 +43,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
       }
 
       const response = await creationService.createFromTemplate(template.id, options);
-      
+
       if (response.success) {
         alert(`Creation "${response.creation.name}" created successfully from template!`);
         if (onTemplateSelect) {
@@ -62,7 +62,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
       code: '🔧',
       api: '🌐',
       ui: '🎨',
-      cli: '⚡'
+      cli: '⚡',
     };
     return icons[type] || '📄';
   };
@@ -72,7 +72,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
       code: 'bg-blue-100 text-blue-800',
       api: 'bg-green-100 text-green-800',
       ui: 'bg-purple-100 text-purple-800',
-      cli: 'bg-orange-100 text-orange-800'
+      cli: 'bg-orange-100 text-orange-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
   };
@@ -81,7 +81,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
     const colors = {
       beginner: 'bg-green-100 text-green-700',
       intermediate: 'bg-yellow-100 text-yellow-700',
-      advanced: 'bg-red-100 text-red-700'
+      advanced: 'bg-red-100 text-red-700',
     };
     return colors[difficulty] || 'bg-gray-100 text-gray-700';
   };
@@ -135,10 +135,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-800">Template Browser</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">
             ×
           </button>
         </div>
@@ -173,7 +170,7 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
             <div className="p-4">
               <h3 className="font-medium text-gray-700 mb-3">Categories</h3>
               <div className="space-y-1">
-                {categories.map(category => (
+                {categories.map((category) => (
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
@@ -205,24 +202,33 @@ const TemplateBrowser = ({ onTemplateSelect, onClose }) => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {selectedTemplates.map(template => (
-                  <div key={template.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                {selectedTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{getTypeIcon(template.type)}</span>
                         <h4 className="font-medium text-gray-800 text-sm">{template.name}</h4>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${getTypeColor(template.type)}`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${getTypeColor(template.type)}`}
+                      >
                         {template.type.toUpperCase()}
                       </span>
                     </div>
 
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">{template.description}</p>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                      {template.description}
+                    </p>
 
                     {template.metadata && (
                       <div className="mb-3">
                         {template.metadata.difficulty && (
-                          <span className={`inline-block px-2 py-1 text-xs rounded-full mr-2 ${getDifficultyColor(template.metadata.difficulty)}`}>
+                          <span
+                            className={`inline-block px-2 py-1 text-xs rounded-full mr-2 ${getDifficultyColor(template.metadata.difficulty)}`}
+                          >
                             {template.metadata.difficulty}
                           </span>
                         )}

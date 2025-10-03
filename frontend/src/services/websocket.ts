@@ -29,12 +29,12 @@ class WebSocketService {
     }
 
     const socketUrl = process.env.REACT_APP_WEBSOCKET_URL || 'http://localhost:3003';
-    
+
     this.socket = io(socketUrl, {
       auth: {
-        token: token
+        token: token,
       },
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
     });
 
     this.socket.on('connect', () => {

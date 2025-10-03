@@ -39,12 +39,12 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
   maxHeight = 800,
   resizable = true,
   draggable = true,
-  className = ''
+  className = '',
 }) => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [zIndex, setZIndex] = useState(40);
-  
+
   const windowRef = useRef<any>(null);
   const [lastPosition, setLastPosition] = useState(initialPosition);
   const [lastSize, setLastSize] = useState(initialSize);
@@ -75,13 +75,9 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
     setZIndex(40); // Send to back
   };
 
-  const windowPosition = isMaximized 
-    ? { x: 0, y: 0 } 
-    : lastPosition;
-    
-  const windowSize = isMaximized 
-    ? { width: '100vw', height: '100vh' }
-    : lastSize;
+  const windowPosition = isMaximized ? { x: 0, y: 0 } : lastPosition;
+
+  const windowSize = isMaximized ? { width: '100vw', height: '100vh' } : lastSize;
 
   if (isMinimized) {
     return (
@@ -139,7 +135,7 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
               {Icon && <Icon className="w-5 h-5" />}
               <h3 className="font-semibold text-sm">{title}</h3>
             </div>
-            
+
             {/* Window Controls */}
             <div className="flex items-center gap-1">
               {onMinimize && (
@@ -153,12 +149,12 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
                   </svg>
                 </button>
               )}
-              
+
               {onMaximize && (
                 <button
                   onClick={handleMaximize}
                   className="w-6 h-6 rounded-full bg-green-500/80 hover:bg-green-500 transition-colors flex items-center justify-center"
-                  title={isMaximized ? "Restore" : "Maximize"}
+                  title={isMaximized ? 'Restore' : 'Maximize'}
                 >
                   <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 20 20">
                     {isMaximized ? (
@@ -169,25 +165,33 @@ export const FloatingWindow: React.FC<FloatingWindowProps> = ({
                   </svg>
                 </button>
               )}
-              
+
               {onClose && (
                 <button
                   onClick={onClose}
                   className="w-6 h-6 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors flex items-center justify-center"
                   title="Close"
                 >
-                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-3 h-3 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               )}
             </div>
           </div>
-          
+
           {/* Window Content */}
-          <div className="flex-1 overflow-auto">
-            {children}
-          </div>
+          <div className="flex-1 overflow-auto">{children}</div>
         </motion.div>
       </Rnd>
     </AnimatePresence>
@@ -210,17 +214,13 @@ export const useWindowManager = () => {
   const [focusedWindow, setFocusedWindow] = useState<string | null>(null);
   const [nextZIndex, setNextZIndex] = useState(50);
 
-  const createWindow = (
-    id: string, 
-    title: string, 
-    options: Partial<WindowState> = {}
-  ) => {
+  const createWindow = (id: string, title: string, options: Partial<WindowState> = {}) => {
     const defaultPosition = {
       x: 100 + Object.keys(windows).length * 30,
-      y: 100 + Object.keys(windows).length * 30
+      y: 100 + Object.keys(windows).length * 30,
     };
 
-    setWindows(prev => ({
+    setWindows((prev) => ({
       ...prev,
       [id]: {
         id,
@@ -230,76 +230,76 @@ export const useWindowManager = () => {
         zIndex: nextZIndex,
         position: defaultPosition,
         size: { width: 600, height: 400 },
-        ...options
-      }
+        ...options,
+      },
     }));
-    
+
     setFocusedWindow(id);
-    setNextZIndex(prev => prev + 1);
+    setNextZIndex((prev) => prev + 1);
   };
 
   const focusWindow = (id: string) => {
     setFocusedWindow(id);
-    setWindows(prev => ({
+    setWindows((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
-        zIndex: nextZIndex
-      }
+        zIndex: nextZIndex,
+      },
     }));
-    setNextZIndex(prev => prev + 1);
+    setNextZIndex((prev) => prev + 1);
   };
 
   const minimizeWindow = (id: string) => {
-    setWindows(prev => ({
+    setWindows((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
-        isMinimized: !prev[id].isMinimized
-      }
+        isMinimized: !prev[id].isMinimized,
+      },
     }));
   };
 
   const maximizeWindow = (id: string) => {
-    setWindows(prev => ({
+    setWindows((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
-        isMaximized: !prev[id].isMaximized
-      }
+        isMaximized: !prev[id].isMaximized,
+      },
     }));
   };
 
   const closeWindow = (id: string) => {
-    setWindows(prev => {
+    setWindows((prev) => {
       const newWindows = { ...prev };
       delete newWindows[id];
       return newWindows;
     });
-    
+
     if (focusedWindow === id) {
-      const remainingWindows = Object.keys(windows).filter(wId => wId !== id);
+      const remainingWindows = Object.keys(windows).filter((wId) => wId !== id);
       setFocusedWindow(remainingWindows.length > 0 ? remainingWindows[0] : null);
     }
   };
 
   const updateWindowPosition = (id: string, position: { x: number; y: number }) => {
-    setWindows(prev => ({
+    setWindows((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
-        position
-      }
+        position,
+      },
     }));
   };
 
   const updateWindowSize = (id: string, size: { width: number; height: number }) => {
-    setWindows(prev => ({
+    setWindows((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
-        size
-      }
+        size,
+      },
     }));
   };
 
@@ -312,6 +312,6 @@ export const useWindowManager = () => {
     maximizeWindow,
     closeWindow,
     updateWindowPosition,
-    updateWindowSize
+    updateWindowSize,
   };
 };

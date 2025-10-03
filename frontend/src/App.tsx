@@ -50,7 +50,9 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className={`min-h-screen ${backgroundGradients.cosmic} flex items-center justify-center`}>
+      <div
+        className={`min-h-screen ${backgroundGradients.cosmic} flex items-center justify-center`}
+      >
         <GlassPanel className="p-8" gradient="dark">
           <div className="flex items-center gap-3 text-white">
             <Cpu className="w-6 h-6 animate-pulse" />
@@ -65,7 +67,9 @@ const App: React.FC = () => {
     <Router>
       <div className={`min-h-screen ${backgroundGradients.aurora}`}>
         {loading ? (
-          <div className={`min-h-screen ${backgroundGradients.cosmic} flex items-center justify-center`}>
+          <div
+            className={`min-h-screen ${backgroundGradients.cosmic} flex items-center justify-center`}
+          >
             <GlassPanel className="p-8" gradient="dark">
               <div className="flex items-center gap-3 text-white">
                 <Cpu className="w-6 h-6 animate-pulse" />
@@ -75,16 +79,13 @@ const App: React.FC = () => {
           </div>
         ) : (
           <Routes>
-            <Route 
-              path="/login" 
-              element={!user ? <AuthForm onLogin={handleLogin} /> : <Navigate to="/" />} 
+            <Route
+              path="/login"
+              element={!user ? <AuthForm onLogin={handleLogin} /> : <Navigate to="/" />}
             />
-            <Route 
-              path="/oauth/callback" 
-              element={<OAuthCallback onLogin={handleLogin} />} 
-            />
-            <Route 
-              path="/" 
+            <Route path="/oauth/callback" element={<OAuthCallback onLogin={handleLogin} />} />
+            <Route
+              path="/"
               element={
                 user ? (
                   <div className="flex h-screen p-4 gap-4">
@@ -107,18 +108,22 @@ const App: React.FC = () => {
                         <CreationHistory creations={creations} setCreations={setCreations} />
                       </GlassPanel>
                     </div>
-                    
+
                     {/* Main Content */}
                     <div className="flex-1">
                       <GlassPanel className="h-full" gradient="default">
-                        <ChatInterface user={user} creations={creations} setCreations={setCreations} />
+                        <ChatInterface
+                          user={user}
+                          creations={creations}
+                          setCreations={setCreations}
+                        />
                       </GlassPanel>
                     </div>
                   </div>
                 ) : (
                   <Navigate to="/login" />
                 )
-              } 
+              }
             />
           </Routes>
         )}

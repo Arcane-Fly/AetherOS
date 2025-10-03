@@ -1,9 +1,9 @@
 import { apiService } from './api';
-import type { 
-  AuthResponse, 
-  ProfileResponse, 
+import type {
+  AuthResponse,
+  ProfileResponse,
   TokenVerificationResponse,
-  ProfileUpdateRequest 
+  ProfileUpdateRequest,
 } from '../types/auth';
 
 class AuthService {
@@ -13,7 +13,11 @@ class AuthService {
   }
 
   async register(email: string, password: string, name: string): Promise<AuthResponse> {
-    const response = await apiService.post<AuthResponse>('/auth/register', { email, password, name });
+    const response = await apiService.post<AuthResponse>('/auth/register', {
+      email,
+      password,
+      name,
+    });
     return response;
   }
 

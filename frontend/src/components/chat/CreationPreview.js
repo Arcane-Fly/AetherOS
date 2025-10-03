@@ -10,7 +10,7 @@ const CreationPreview = ({ creation }) => {
       code: '🔧',
       api: '🌐',
       ui: '🎨',
-      cli: '⚡'
+      cli: '⚡',
     };
     return icons[type] || '📄';
   };
@@ -20,19 +20,19 @@ const CreationPreview = ({ creation }) => {
       code: 'bg-blue-100 text-blue-800',
       api: 'bg-green-100 text-green-800',
       ui: 'bg-purple-100 text-purple-800',
-      cli: 'bg-orange-100 text-orange-800'
+      cli: 'bg-orange-100 text-orange-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
   };
 
   const formatContent = (content, language) => {
     if (!content) return 'No content available';
-    
+
     // Truncate content if it's too long and not expanded
     if (!isExpanded && content.length > 500) {
       return content.substring(0, 500) + '...';
     }
-    
+
     return content;
   };
 
@@ -60,21 +60,17 @@ const CreationPreview = ({ creation }) => {
           </button>
         </div>
       </div>
-      
+
       <p className="text-gray-600 text-sm mb-3">{creation.description}</p>
-      
+
       <div className="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-xs overflow-x-auto">
         <pre>{formatContent(creation.content, creation.language)}</pre>
       </div>
-      
+
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          {creation.language && (
-            <span>Language: {creation.language}</span>
-          )}
-          {creation.framework && (
-            <span>Framework: {creation.framework}</span>
-          )}
+          {creation.language && <span>Language: {creation.language}</span>}
+          {creation.framework && <span>Framework: {creation.framework}</span>}
           <span>Created: {new Date(creation.timestamp).toLocaleString()}</span>
         </div>
         <div className="flex gap-2">

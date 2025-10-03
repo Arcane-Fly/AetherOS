@@ -88,7 +88,7 @@ export const generationService = {
 
   async generateCLI(prompt: string): Promise<CLIGenerationResponse> {
     return apiService.post<CLIGenerationResponse>('/generate/cli', { prompt });
-  }
+  },
 };
 
 // Creation Service
@@ -98,7 +98,7 @@ export const creationService = {
     Object.entries(filters).forEach(([key, value]) => {
       if (value) queryParams.append(key, String(value));
     });
-    
+
     const endpoint = queryParams.toString() ? `/creations?${queryParams}` : '/creations';
     return apiService.get<Creation[]>(endpoint);
   },
@@ -108,8 +108,10 @@ export const creationService = {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '') queryParams.append(key, String(value));
     });
-    
-    const endpoint = queryParams.toString() ? `/creations/search?${queryParams}` : '/creations/search';
+
+    const endpoint = queryParams.toString()
+      ? `/creations/search?${queryParams}`
+      : '/creations/search';
     return apiService.get<Creation[]>(endpoint);
   },
 
@@ -121,7 +123,11 @@ export const creationService = {
     return apiService.put<Creation>(`/creations/${id}`, updates);
   },
 
-  async updateCreationWithVersion(id: number, updates: Partial<Creation>, createNewVersion = true): Promise<Creation> {
+  async updateCreationWithVersion(
+    id: number,
+    updates: Partial<Creation>,
+    createNewVersion = true
+  ): Promise<Creation> {
     return apiService.put<Creation>(`/creations/${id}`, { ...updates, createNewVersion });
   },
 
@@ -141,11 +147,15 @@ export const creationService = {
     return apiService.post<ApiResponse>(`/creations/${id}/execute`);
   },
 
-  async linkCreations(sourceId: number, targetId: number, linkType: 'reference' | 'extends' | 'imports' | 'dependency' = 'reference'): Promise<ApiResponse> {
+  async linkCreations(
+    sourceId: number,
+    targetId: number,
+    linkType: 'reference' | 'extends' | 'imports' | 'dependency' = 'reference'
+  ): Promise<ApiResponse> {
     return apiService.post<ApiResponse>('/creations/link', {
       sourceId,
       targetId,
-      linkType
+      linkType,
     });
   },
 
@@ -165,37 +175,40 @@ export const creationService = {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/creations/${id}/export`, {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
-    
+
     if (!response.ok) {
       throw new Error('Export failed');
     }
-    
+
     return response.blob();
   },
 
-  async exportMultipleCreations(creationIds: number[] | null = null, includeLinks = true): Promise<Blob> {
+  async exportMultipleCreations(
+    creationIds: number[] | null = null,
+    includeLinks = true
+  ): Promise<Blob> {
     const body: any = { includeLinks };
     if (creationIds) {
       body.creationIds = creationIds;
     }
-    
+
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/creations/export`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
-    
+
     if (!response.ok) {
       throw new Error('Export failed');
     }
-    
+
     return response.blob();
   },
 
@@ -204,7 +217,7 @@ export const creationService = {
     return apiService.post<ApiResponse>('/creations/import', {
       importData,
       overwriteExisting,
-      preserveLinks
+      preserveLinks,
     });
   },
 
@@ -214,20 +227,33 @@ export const creationService = {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '') queryParams.append(key, String(value));
     });
-    
-    const endpoint = queryParams.toString() ? `/creations/templates?${queryParams}` : '/creations/templates';
+
+    const endpoint = queryParams.toString()
+      ? `/creations/templates?${queryParams}`
+      : '/creations/templates';
     return apiService.get<TemplateResponse>(endpoint);
   },
 
-  async createFromTemplate(templateId: number, options: CreateFromTemplateRequest = {}): Promise<ApiResponse<Creation>> {
-    return apiService.post<ApiResponse<Creation>>(`/creations/templates/${templateId}/create`, options);
+  async createFromTemplate(
+    templateId: number,
+    options: CreateFromTemplateRequest = {}
+  ): Promise<ApiResponse<Creation>> {
+    return apiService.post<ApiResponse<Creation>>(
+      `/creations/templates/${templateId}/create`,
+      options
+    );
   },
 
-  async makeTemplate(creationId: number, templateCategory = 'User Templates'): Promise<ApiResponse> {
-    return apiService.post<ApiResponse>(`/creations/${creationId}/make-template`, { templateCategory });
+  async makeTemplate(
+    creationId: number,
+    templateCategory = 'User Templates'
+  ): Promise<ApiResponse> {
+    return apiService.post<ApiResponse>(`/creations/${creationId}/make-template`, {
+      templateCategory,
+    });
   },
 
   async removeTemplate(creationId: number): Promise<ApiResponse> {
     return apiService.post<ApiResponse>(`/creations/${creationId}/remove-template`);
-  }
+  },
 };

@@ -5,22 +5,22 @@ import { creationService } from '../../services/api';
 import { GlassPanel, GlassButton, GlassInput } from '../ui/GlassPanel';
 import type { CreationHistoryProps } from '../../types/components';
 import type { Creation, VersionHistoryResponse, ImportResponse } from '../../types/api';
-import { 
-  Search, 
-  Download, 
-  Upload, 
-  Link, 
-  FileText, 
-  Code, 
-  Globe, 
-  Palette, 
-  Terminal, 
+import {
+  Search,
+  Download,
+  Upload,
+  Link,
+  FileText,
+  Code,
+  Globe,
+  Palette,
+  Terminal,
   Copy,
   Trash2,
   Clock,
   Star,
   Filter,
-  X
+  X,
 } from 'lucide-react';
 
 const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreations }) => {
@@ -35,7 +35,9 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
   const [showExportOptions, setShowExportOptions] = useState<boolean>(false);
   const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
   const [showVersionHistory, setShowVersionHistory] = useState<Record<number, boolean>>({});
-  const [versionHistories, setVersionHistories] = useState<Record<number, VersionHistoryResponse>>({});
+  const [versionHistories, setVersionHistories] = useState<Record<number, VersionHistoryResponse>>(
+    {}
+  );
   const [showTemplateBrowser, setShowTemplateBrowser] = useState<boolean>(false);
 
   // Filter and sort creations based on current filters
@@ -44,16 +46,17 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(creation =>
-        creation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        creation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (creation.content && creation.content.toLowerCase().includes(searchTerm.toLowerCase()))
+      filtered = filtered.filter(
+        (creation) =>
+          creation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          creation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (creation.content && creation.content.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
     // Apply type filter
     if (typeFilter) {
-      filtered = filtered.filter(creation => creation.type === typeFilter);
+      filtered = filtered.filter((creation) => creation.type === typeFilter);
     }
 
     // Apply sorting
@@ -88,7 +91,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
   }, [creations, searchTerm, typeFilter, sortBy, sortOrder]);
 
   const handleDeleteCreation = (id: number): void => {
-    setCreations(prev => prev.filter(creation => creation.id !== id));
+    setCreations((prev) => prev.filter((creation) => creation.id !== id));
   };
 
   const copyToClipboard = (code: string): void => {
@@ -96,22 +99,31 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
     // You could add a toast notification here
   };
 
-  const handleLink = (linkData: { sourceId: number; targetIds: number[]; linkType: string }): void => {
+  const handleLink = (linkData: {
+    sourceId: number;
+    targetIds: number[];
+    linkType: string;
+  }): void => {
     console.log('Creations linked:', linkData);
     // Update creation with links information
-    setCreations(prev => prev.map(creation => {
-      if (creation.id === linkData.sourceId) {
-        return {
-          ...creation,
-          links: [...(creation.links || []), ...linkData.targetIds.map(id => ({
-            targetId: id,
-            type: linkData.linkType as 'reference' | 'extends' | 'imports' | 'dependency',
-            timestamp: new Date()
-          }))]
-        };
-      }
-      return creation;
-    }));
+    setCreations((prev) =>
+      prev.map((creation) => {
+        if (creation.id === linkData.sourceId) {
+          return {
+            ...creation,
+            links: [
+              ...(creation.links || []),
+              ...linkData.targetIds.map((id) => ({
+                targetId: id,
+                type: linkData.linkType as 'reference' | 'extends' | 'imports' | 'dependency',
+                timestamp: new Date(),
+              })),
+            ],
+          };
+        }
+        return creation;
+      })
+    );
   };
 
   const clearFilters = (): void => {
@@ -150,7 +162,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       setSelectedForExport([]);
       setShowExportOptions(false);
     } catch (error) {
@@ -166,15 +178,17 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
     try {
       const text = await file.text();
       const importData = JSON.parse(text);
-      
-      const result = await creationService.importCreations(importData, {
+
+      const result = (await creationService.importCreations(importData, {
         overwriteExisting: false,
-        preserveLinks: true
-      }) as ImportResponse;
+        preserveLinks: true,
+      })) as ImportResponse;
 
       if (result.success) {
-        alert(`Import completed!\nImported: ${result.summary.imported}\nSkipped: ${result.summary.skipped}\nErrors: ${result.summary.errors}`);
-        
+        alert(
+          `Import completed!\nImported: ${result.summary.imported}\nSkipped: ${result.summary.skipped}\nErrors: ${result.summary.errors}`
+        );
+
         // Refresh creations list
         window.location.reload(); // Simple refresh for now
       }
@@ -182,30 +196,28 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
       console.error('Import failed:', error);
       alert('Import failed. Please check the file format and try again.');
     }
-    
+
     // Reset file input
     event.target.value = '';
     setShowImportDialog(false);
   };
 
   const toggleExportSelection = (creationId: number): void => {
-    setSelectedForExport(prev => 
-      prev.includes(creationId)
-        ? prev.filter(id => id !== creationId)
-        : [...prev, creationId]
+    setSelectedForExport((prev) =>
+      prev.includes(creationId) ? prev.filter((id) => id !== creationId) : [...prev, creationId]
     );
   };
 
   const handleViewVersionHistory = async (creation: Creation): Promise<void> => {
     try {
       const versionData = await creationService.getVersionHistory(creation.id);
-      setVersionHistories(prev => ({
+      setVersionHistories((prev) => ({
         ...prev,
-        [creation.id]: versionData
+        [creation.id]: versionData,
       }));
-      setShowVersionHistory(prev => ({
+      setShowVersionHistory((prev) => ({
         ...prev,
-        [creation.id]: !prev[creation.id]
+        [creation.id]: !prev[creation.id],
       }));
     } catch (error) {
       console.error('Failed to fetch version history:', error);
@@ -213,8 +225,16 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
     }
   };
 
-  const handleRestoreVersion = async (baseId: number, versionId: number, versionNumber: number): Promise<void> => {
-    if (!window.confirm(`Are you sure you want to restore version ${versionNumber}? This will create a new version.`)) {
+  const handleRestoreVersion = async (
+    baseId: number,
+    versionId: number,
+    versionNumber: number
+  ): Promise<void> => {
+    if (
+      !window.confirm(
+        `Are you sure you want to restore version ${versionNumber}? This will create a new version.`
+      )
+    ) {
       return;
     }
 
@@ -262,7 +282,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
 
   const handleTemplateSelect = (newCreation: Creation, template: any): void => {
     // Add the new creation to the list
-    setCreations(prev => [newCreation, ...prev]);
+    setCreations((prev) => [newCreation, ...prev]);
   };
 
   const getTypeIcon = (type: string) => {
@@ -270,7 +290,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
       code: Code,
       api: Globe,
       ui: Palette,
-      cli: Terminal
+      cli: Terminal,
     };
     return icons[type as keyof typeof icons] || FileText;
   };
@@ -280,12 +300,13 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
       code: 'bg-blue-500/20 text-blue-300 border-blue-400/30',
       api: 'bg-green-500/20 text-green-300 border-green-400/30',
       ui: 'bg-purple-500/20 text-purple-300 border-purple-400/30',
-      cli: 'bg-orange-500/20 text-orange-300 border-orange-400/30'
+      cli: 'bg-orange-500/20 text-orange-300 border-orange-400/30',
     };
     return colors[type as keyof typeof colors] || 'bg-gray-500/20 text-gray-300 border-gray-400/30';
   };
 
-  const hasActiveFilters = searchTerm || typeFilter || sortBy !== 'created_at' || sortOrder !== 'DESC';
+  const hasActiveFilters =
+    searchTerm || typeFilter || sortBy !== 'created_at' || sortOrder !== 'DESC';
 
   return (
     <div className="h-full space-y-4">
@@ -387,25 +408,18 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
           </div>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <GlassButton
-                onClick={handleExportMultiple}
-                variant="primary"
-                className="text-sm"
-              >
+              <GlassButton onClick={handleExportMultiple} variant="primary" className="text-sm">
                 Export All Creations
               </GlassButton>
               {selectedForExport.length > 0 && (
-                <GlassButton
-                  onClick={handleExportMultiple}
-                  variant="primary"
-                  className="text-sm"
-                >
+                <GlassButton onClick={handleExportMultiple} variant="primary" className="text-sm">
                   Export Selected ({selectedForExport.length})
                 </GlassButton>
               )}
             </div>
             <p className="text-sm text-white/80">
-              Select individual creations below and click their export button, or use selection mode to export multiple at once.
+              Select individual creations below and click their export button, or use selection mode
+              to export multiple at once.
             </p>
           </div>
         </GlassPanel>
@@ -458,11 +472,7 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
             </button>
 
             {hasActiveFilters && (
-              <GlassButton
-                onClick={clearFilters}
-                variant="danger"
-                className="text-sm px-3 py-1.5"
-              >
+              <GlassButton onClick={clearFilters} variant="danger" className="text-sm px-3 py-1.5">
                 <Filter className="w-3 h-3 mr-1" />
                 Clear Filters
               </GlassButton>
@@ -474,17 +484,13 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
           </div>
         </GlassPanel>
       )}
-      
+
       {showLinker && creations.length > 0 && (
         <GlassPanel className="p-4">
-          <CreationLinker
-            creations={creations}
-            onLink={handleLink}
-            currentCreationId={null}
-          />
+          <CreationLinker creations={creations} onLink={handleLink} currentCreationId={null} />
         </GlassPanel>
       )}
-      
+
       {creations.length === 0 ? (
         <GlassPanel className="p-8 text-center">
           <div className="text-white/70 text-sm">
@@ -505,12 +511,12 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
         </GlassPanel>
       ) : (
         <div className="space-y-3 max-h-96 overflow-y-auto">
-          {filteredCreations.map(creation => {
+          {filteredCreations.map((creation) => {
             const TypeIcon = getTypeIcon(creation.type);
-            
+
             return (
-              <GlassPanel 
-                key={creation.id} 
+              <GlassPanel
+                key={creation.id}
                 className={`p-4 cursor-pointer transition-all ${
                   selectedCreation === creation.id ? 'ring-2 ring-white/40' : ''
                 }`}
@@ -533,13 +539,17 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
                       <div className="flex items-center gap-2 mb-2">
                         <TypeIcon className="w-4 h-4 text-white" />
                         <h4 className="font-medium text-white text-sm">{creation.name}</h4>
-                        <span className={`px-2 py-1 text-xs rounded-full border backdrop-blur-sm ${getTypeColor(creation.type)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full border backdrop-blur-sm ${getTypeColor(creation.type)}`}
+                        >
                           {creation.type.toUpperCase()}
                         </span>
                         {creation.version && (
                           <span className="px-2 py-1 text-xs bg-white/10 text-white/80 rounded-full border border-white/20">
                             v{creation.version}
-                            {creation.version_count && creation.version_count > 1 && ` (${creation.version_count} versions)`}
+                            {creation.version_count &&
+                              creation.version_count > 1 &&
+                              ` (${creation.version_count} versions)`}
                           </span>
                         )}
                         {creation.is_template && (
@@ -554,8 +564,10 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
                           </span>
                         )}
                       </div>
-                      <p className="text-white/80 text-xs mb-2 line-clamp-2">{creation.description}</p>
-                      
+                      <p className="text-white/80 text-xs mb-2 line-clamp-2">
+                        {creation.description}
+                      </p>
+
                       {creation.links && creation.links.length > 0 && (
                         <div className="mb-2">
                           <div className="text-xs text-purple-300 mb-1">
@@ -564,27 +576,28 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {creation.links.map((link, index) => (
-                              <span key={index} className="px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded border border-purple-400/30">
+                              <span
+                                key={index}
+                                className="px-2 py-1 text-xs bg-purple-500/20 text-purple-300 rounded border border-purple-400/30"
+                              >
                                 {link.type}
                               </span>
                             ))}
                           </div>
                         </div>
                       )}
-                      
+
                       <div className="flex items-center mt-2 space-x-2">
                         <span className="text-xs text-white/60">
                           {new Date(creation.timestamp).toLocaleDateString()}
                         </span>
                         {creation.framework && (
-                          <span className="text-xs text-white/60">
-                            • {creation.framework}
-                          </span>
+                          <span className="text-xs text-white/60">• {creation.framework}</span>
                         )}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex space-x-1 ml-2">
                     {creation.version_count && creation.version_count > 1 && (
                       <button
@@ -662,11 +675,11 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
                     <h5 className="text-sm font-medium text-white/90 mb-2">Version History</h5>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {versionHistories[creation.id].versions.map((version, index) => (
-                        <div 
-                          key={version.id} 
+                        <div
+                          key={version.id}
                           className={`p-2 rounded text-xs border ${
-                            version.is_current_version 
-                              ? 'bg-green-500/20 border-green-400/30 text-green-300' 
+                            version.is_current_version
+                              ? 'bg-green-500/20 border-green-400/30 text-green-300'
                               : 'bg-white/5 border-white/20 text-white/80'
                           }`}
                         >
@@ -674,7 +687,9 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
                             <div>
                               <span className="font-medium">Version {version.version}</span>
                               {version.is_current_version && (
-                                <span className="ml-2 px-1 py-0.5 bg-green-500/30 text-green-300 rounded text-xs">Current</span>
+                                <span className="ml-2 px-1 py-0.5 bg-green-500/30 text-green-300 rounded text-xs">
+                                  Current
+                                </span>
                               )}
                               <div className="text-white/60 mt-1">
                                 {new Date(version.created_at).toLocaleString()}
@@ -682,7 +697,13 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
                             </div>
                             {!version.is_current_version && (
                               <GlassButton
-                                onClick={() => handleRestoreVersion(versionHistories[creation.id].baseCreationId, version.id, version.version)}
+                                onClick={() =>
+                                  handleRestoreVersion(
+                                    versionHistories[creation.id].baseCreationId,
+                                    version.id,
+                                    version.version
+                                  )
+                                }
                                 variant="secondary"
                                 className="text-xs px-2 py-1"
                               >
@@ -701,13 +722,23 @@ const CreationHistory: React.FC<CreationHistoryProps> = ({ creations, setCreatio
                     </div>
                   </div>
                 )}
-                
+
                 {creation.content && (
                   <details className="mt-3">
                     <summary className="text-xs text-white/80 cursor-pointer hover:text-white flex items-center gap-1">
                       <span>View Content</span>
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </summary>
                     <div className="mt-2 bg-black/40 text-green-300 p-3 rounded-lg text-xs font-mono overflow-x-auto border border-white/10">

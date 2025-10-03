@@ -5,12 +5,12 @@ const GenerationTypeSelector = ({ value, onChange, disabled = false }) => {
     { value: 'code', label: '🔧 Code', description: 'Functions, scripts, algorithms' },
     { value: 'api', label: '🌐 API', description: 'REST endpoints, OpenAPI specs' },
     { value: 'ui', label: '🎨 UI Component', description: 'React components, interfaces' },
-    { value: 'cli', label: '⚡ CLI Tool', description: 'Command-line utilities' }
+    { value: 'cli', label: '⚡ CLI Tool', description: 'Command-line utilities' },
   ];
 
   return (
     <div className="flex flex-wrap gap-2">
-      {types.map(type => (
+      {types.map((type) => (
         <button
           key={type.value}
           onClick={() => onChange(type.value)}
