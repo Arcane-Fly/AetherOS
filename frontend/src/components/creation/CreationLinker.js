@@ -11,23 +11,23 @@ const CreationLinker = ({ creations, onLink, currentCreationId = null }) => {
     { value: 'reference', label: 'Reference', description: 'Use as reference or import' },
     { value: 'extends', label: 'Extends', description: 'Build upon this creation' },
     { value: 'imports', label: 'Imports', description: 'Import functions/components' },
-    { value: 'dependency', label: 'Dependency', description: 'Required for execution' }
+    { value: 'dependency', label: 'Dependency', description: 'Required for execution' },
   ];
 
-  const filteredCreations = creations.filter(creation => {
+  const filteredCreations = creations.filter((creation) => {
     if (currentCreationId && creation.id === currentCreationId) return false;
     if (!searchTerm) return true;
-    
-    return creation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           creation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           creation.type.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return (
+      creation.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      creation.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      creation.type.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
   const handleCreationToggle = (creationId) => {
-    setSelectedCreations(prev => 
-      prev.includes(creationId)
-        ? prev.filter(id => id !== creationId)
-        : [...prev, creationId]
+    setSelectedCreations((prev) =>
+      prev.includes(creationId) ? prev.filter((id) => id !== creationId) : [...prev, creationId]
     );
   };
 
@@ -38,13 +38,14 @@ const CreationLinker = ({ creations, onLink, currentCreationId = null }) => {
       for (const targetId of selectedCreations) {
         await creationService.linkCreations(currentCreationId, targetId, linkType);
       }
-      
-      onLink && onLink({
-        sourceId: currentCreationId,
-        targetIds: selectedCreations,
-        linkType
-      });
-      
+
+      onLink &&
+        onLink({
+          sourceId: currentCreationId,
+          targetIds: selectedCreations,
+          linkType,
+        });
+
       setSelectedCreations([]);
       setIsVisible(false);
     } catch (error) {
@@ -57,7 +58,7 @@ const CreationLinker = ({ creations, onLink, currentCreationId = null }) => {
       code: '🔧',
       api: '🌐',
       ui: '🎨',
-      cli: '⚡'
+      cli: '⚡',
     };
     return icons[type] || '📄';
   };
@@ -99,7 +100,7 @@ const CreationLinker = ({ creations, onLink, currentCreationId = null }) => {
             onChange={(e) => setLinkType(e.target.value)}
             className="px-3 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            {linkTypes.map(type => (
+            {linkTypes.map((type) => (
               <option key={type.value} value={type.value}>
                 {type.label}
               </option>
@@ -108,7 +109,7 @@ const CreationLinker = ({ creations, onLink, currentCreationId = null }) => {
         </div>
 
         <div className="max-h-64 overflow-y-auto space-y-2">
-          {filteredCreations.map(creation => (
+          {filteredCreations.map((creation) => (
             <div
               key={creation.id}
               className={`p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -136,7 +137,7 @@ const CreationLinker = ({ creations, onLink, currentCreationId = null }) => {
               </div>
             </div>
           ))}
-          
+
           {filteredCreations.length === 0 && (
             <div className="text-center text-gray-500 py-8">
               {searchTerm ? 'No creations match your search' : 'No creations available to link'}

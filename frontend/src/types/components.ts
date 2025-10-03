@@ -15,11 +15,7 @@ export interface CreationHistoryProps {
 
 export interface CreationLinkerProps {
   creations: Creation[];
-  onLink?: (linkData: {
-    sourceId: number;
-    targetIds: number[];
-    linkType: string;
-  }) => void;
+  onLink?: (linkData: { sourceId: number; targetIds: number[]; linkType: string }) => void;
   currentCreationId?: number | null;
 }
 

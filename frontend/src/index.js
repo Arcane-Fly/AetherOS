@@ -8,9 +8,9 @@ const initializeTheme = () => {
   const savedTheme = localStorage.getItem('theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-  
+
   document.documentElement.className = theme;
-  
+
   if (!savedTheme) {
     localStorage.setItem('theme', theme);
   }
