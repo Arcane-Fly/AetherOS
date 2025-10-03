@@ -8,7 +8,7 @@
     "provider": "node",
     "steps": {
       "install": {
-        "commands": ["yarn install --frozen-lockfile"]
+        "commands": ["yarn install --immutable"]
       }
     }
   },
