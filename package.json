@@ -28,6 +28,7 @@
     "deploy:railway": "railway up --force",
     "validate:railpack": "find . -name 'railpack.json' -exec jq '.' {} \\;",
     "validate:railpack-advanced": "./scripts/validate-railpack.sh",
+    "validate:setup": "./scripts/validate-setup.sh",
     "prepare": "husky"
   },
   "keywords": [

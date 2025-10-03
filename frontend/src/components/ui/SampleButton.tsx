@@ -19,7 +19,6 @@ interface SampleButtonProps {
 
 // Example constant
 const DEFAULT_TRANSITION_DURATION = '200ms';
-const MAX_BUTTON_WIDTH = '400px';
 
 const SampleButton: React.FC<SampleButtonProps> = ({
   children,
