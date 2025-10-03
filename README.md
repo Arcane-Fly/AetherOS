@@ -26,10 +26,56 @@ Create a "liquid" container that holds generative capabilities, allowing users t
 
 ### Prerequisites
 
-- Docker and Docker Compose
-- OpenAI API key (for code generation)
+- **Node.js**: >= 20.0.0
+- **Yarn**: >= 4.9.2 (managed via Corepack)
+- **Docker and Docker Compose** (for production deployment)
+- **OpenAI API key** (for code generation)
 
 ### Installation
+
+#### For Development
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Arcane-Fly/AetherOS.git
+   cd AetherOS
+   ```
+
+2. **Enable Corepack and Yarn 4.9.2**
+   ```bash
+   # Enable Corepack (comes with Node.js 16.9+)
+   corepack enable
+   
+   # Activate Yarn 4.9.2
+   corepack prepare yarn@4.9.2 --activate
+   
+   # Verify installation
+   yarn --version  # Should output: 4.9.2
+   ```
+
+3. **Install dependencies**
+   ```bash
+   # Install all dependencies across workspaces
+   yarn install
+   ```
+
+4. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your OpenAI API key
+   nano .env
+   ```
+
+5. **Start development server**
+   ```bash
+   # Start frontend
+   cd frontend && yarn dev
+   ```
+
+6. **Visit the application**
+   - Frontend: http://localhost:3000
+
+#### For Production (Docker)
 
 1. **Clone the repository**
    ```bash
@@ -123,6 +169,44 @@ AetherOS: *Generates React component with Tailwind CSS styling*
 ```
 
 ## 🔧 Development
+
+### Development Standards
+
+AetherOS follows comprehensive development standards using modern tooling:
+
+- **Package Manager**: Yarn 4.9.2+ via Corepack
+- **Linting**: ESLint with React and TypeScript rules
+- **Formatting**: Prettier for consistent code style
+- **Pre-commit Hooks**: Husky for automated quality checks
+- **TypeScript**: Absolute imports configured for cleaner code
+- **Naming Conventions**: 
+  - Components: `PascalCase` (e.g., `Button.tsx`)
+  - Functions/Variables: `camelCase`
+  - Constants: `UPPER_SNAKE_CASE`
+  - Types/Interfaces: `PascalCase` (without 'I' prefix)
+
+📖 **See [Development Standards Guide](docs/development-standards.md)** for complete details on:
+- Project structure and folder organization
+- Naming conventions for all file types
+- Tooling configuration (ESLint, Prettier, TypeScript)
+- Yarn 4 best practices and workspace management
+- Component development examples
+
+### Quality Checks
+
+```bash
+# Run linting
+cd frontend && yarn lint
+
+# Auto-fix linting issues
+cd frontend && yarn lint:fix
+
+# Format code
+cd frontend && yarn format
+
+# Check formatting
+cd frontend && yarn format:check
+```
 
 ### Running in Development Mode
 
