@@ -192,6 +192,13 @@ AetherOS follows comprehensive development standards using modern tooling:
 - Yarn 4 best practices and workspace management
 - Component development examples
 
+📖 **See [Build Tooling Recommendations](specs/standards/build-tooling-recommendations.md)** for analysis of:
+- Nx vs Bazel/Pants decision matrix
+- When to adopt advanced build tools
+- Python integration with uv
+- Migration guides and performance benchmarks
+- Quick reference: [Build Tooling Cheat Sheet](specs/standards/build-tooling-quick-reference.md)
+
 ### Quality Checks
 
 ```bash
