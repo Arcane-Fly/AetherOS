@@ -101,6 +101,19 @@ Following modern development best practices, AetherOS uses the following package
 
 ## Development Tools
 
+### Build & Monorepo Management
+
+*   **Current:** Yarn 4.9.2 Workspaces (via Corepack)
+    *   Rationale: Modern, fast, reliable dependency management for JavaScript monorepo
+*   **Future (when scaling):** Nx for task orchestration and caching
+    *   Trigger: When > 10 packages, > 5 developers, or CI builds > 10 minutes
+    *   Rationale: Intelligent caching, affected builds, better CI performance
+*   **Not Recommended:** Bazel/Pants unless Python becomes dominant (50%+) with hermetic build requirements
+
+**📖 See [Build Tooling Recommendations](./build-tooling-recommendations.md)** for detailed analysis of Nx vs Bazel/Pants decision matrix.
+
+**📖 See [Build Tooling Quick Reference](./build-tooling-quick-reference.md)** for TL;DR and command cheat sheet.
+
 ### Code Quality
 *   **Linting:** ESLint with React and Node.js configurations
 *   **Formatting:** Prettier for consistent code formatting
