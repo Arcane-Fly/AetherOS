@@ -123,8 +123,9 @@ Welcome to the AetherOS documentation! This directory contains comprehensive gui
 
 1. **Read [SETUP.md](./SETUP.md)** - Set up your environment
 2. **Review [development-standards.md](./development-standards.md)** - Learn the conventions
-3. **Check the main [README.md](../README.md)** - Understand the project
-4. **Start coding!**
+3. **Check [build-tooling-summary.md](./build-tooling-summary.md)** - Understand current build tooling (optional)
+4. **Check the main [README.md](../README.md)** - Understand the project
+5. **Start coding!**
 
 ### For Code Reviews
 
@@ -180,6 +181,8 @@ git commit -m "Your message"
 - [Roadmap](../specs/roadmap.md) - Project roadmap and features
 - [Code Style](../specs/standards/code-style.md) - General code style guide
 - [Tech Stack](../specs/standards/tech-stack.md) - Technology choices
+- [Build Tooling Summary](./build-tooling-summary.md) - Build tool recommendations (Nx vs Bazel)
+- [Build Tooling Full Analysis](../specs/standards/build-tooling-recommendations.md) - Comprehensive decision matrix
 
 ### External Resources
 

@@ -24,6 +24,8 @@ specs/
 ├── roadmap.md               # Product roadmap and future plans
 ├── standards/               # Development standards and guidelines
 │   ├── tech-stack.md        # Technology choices and package manager preferences
+│   ├── build-tooling-recommendations.md  # Nx vs Bazel/Pants decision matrix
+│   ├── build-tooling-quick-reference.md  # TL;DR and command cheat sheet
 │   ├── best-practices.md    # Development best practices with conditional blocks
 │   ├── code-style.md        # General code formatting and naming conventions
 │   └── code-style/          # Language-specific style guides
@@ -49,12 +51,12 @@ These specifications ensure:
 - **Maintainability** through consistent code style and organization
 - **Developer Velocity** through clear workflows and automated tooling
 
-## Package Management Standards
+## Package Management & Build Tooling Standards
 
-AetherOS follows a hierarchical approach to package management:
+AetherOS follows a hierarchical approach to package management and build tooling:
 
 ### JavaScript/Node.js
-1. **Primary:** Yarn (`yarn install`, `yarn add`)
+1. **Primary:** Yarn 4.9.2 (`yarn install`, `yarn add`)
 2. **Fallback:** pnpm (`pnpm install`, `pnpm add`)
 3. **Last Resort:** npm (`npm install`)
 
@@ -64,6 +66,15 @@ AetherOS follows a hierarchical approach to package management:
 3. **Last Resort:** pip (`pip install`)
 
 **Rationale:** These tools provide better dependency resolution, faster installs, and more reliable lock files.
+
+### Build & Monorepo Management
+- **Current:** Yarn 4.9.2 Workspaces (sufficient for current scale)
+- **Future:** Nx (when > 10 packages or > 5 developers)
+- **Avoid:** Bazel/Pants (unless Python becomes 50%+ of codebase)
+
+**📖 See [Build Tooling Recommendations](./standards/build-tooling-recommendations.md)** for comprehensive analysis of Nx vs Bazel/Pants decision matrix.
+
+**📖 See [Build Tooling Quick Reference](./standards/build-tooling-quick-reference.md)** for TL;DR and command cheat sheet.
 
 ## Usage Guidelines
 
